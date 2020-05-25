@@ -122,12 +122,14 @@ GlPersistentBuffer::~GlPersistentBuffer() {
 }
 
 Status CreatePersistentBuffer(size_t size, GlPersistentBuffer* gl_buffer) {
+  #ifndef MAC_OPENGL
   PFNGLBUFFERSTORAGEEXTPROC glBufferStorageEXT = nullptr;
   glBufferStorageEXT = reinterpret_cast<PFNGLBUFFERSTORAGEEXTPROC>(
       eglGetProcAddress("glBufferStorageEXT"));
   if (!glBufferStorageEXT) {
     return UnavailableError("glBufferStorageEXT is not supported");
   }
+  #endif
   gl_buffer_internal::BufferId id;
   gl_buffer_internal::BufferBinder binder(GL_SHADER_STORAGE_BUFFER, id.id());
   RETURN_IF_ERROR(TFLITE_GPU_CALL_GL(

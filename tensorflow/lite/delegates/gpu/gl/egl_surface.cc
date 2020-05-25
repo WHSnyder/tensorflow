@@ -13,6 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#ifndef MAC_OPENGL
+
+
 #include "tensorflow/lite/delegates/gpu/gl/egl_surface.h"
 
 #include "tensorflow/lite/delegates/gpu/common/status.h"
@@ -69,3 +72,5 @@ Status CreatePbufferRGBSurface(EGLConfig config, EGLDisplay display,
 }  // namespace gl
 }  // namespace gpu
 }  // namespace tflite
+
+#endif

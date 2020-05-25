@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+#ifndef MAC_OPENGL
 
 #include "tensorflow/lite/delegates/gpu/gl/egl_context.h"
 
@@ -143,3 +144,5 @@ Status CreatePBufferContext(EGLDisplay display, EGLContext shared_context,
 }  // namespace gl
 }  // namespace gpu
 }  // namespace tflite
+
+#endif

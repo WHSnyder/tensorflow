@@ -103,10 +103,14 @@ Status CallAndCheckError(const std::string& context, F func, ErrorF error_func,
       #method " in " TFLITE_GPU_FILE_LINE, method,        \
       ::tflite::gpu::gl::GetOpenGlErrors, __VA_ARGS__)
 
+#ifndef MAC_OPENGL
+
 #define TFLITE_GPU_CALL_EGL(method, ...)                  \
   ::tflite::gpu::gl::gl_call_internal::CallAndCheckError( \
       #method " in " TFLITE_GPU_FILE_LINE, method,        \
       ::tflite::gpu::gl::GetEglError, __VA_ARGS__)
+
+#endif
 
 }  // namespace gl
 }  // namespace gpu

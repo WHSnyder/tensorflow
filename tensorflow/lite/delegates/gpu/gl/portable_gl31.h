@@ -16,6 +16,8 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_PORTABLE_GL31_H_
 #define TENSORFLOW_LITE_DELEGATES_GPU_GL_PORTABLE_GL31_H_
 
+#ifndef MAC_OPENGL
+
 #define HAS_EGL 1
 
 #include <EGL/egl.h>
@@ -32,5 +34,11 @@ limitations under the License.
 #endif  // __ANDROID__
 
 #include <GLES3/gl31.h>
+
+#else
+
+#include "tensorflow/lite/delegates/gpu/gl/glew.h"
+
+#endif
 
 #endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_PORTABLE_GL31_H_

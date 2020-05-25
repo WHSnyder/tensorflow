@@ -356,10 +356,7 @@ cc_library(
 
 cc_library(
     name = "portable",
-    hdrs = [
-        "portable_egl.h",
-        "portable_gl31.h",
-    ],
+    hdrs = ["portable_egl.h", "portable_gl31.h", "glew.h",],
 )
 
 cc_library(

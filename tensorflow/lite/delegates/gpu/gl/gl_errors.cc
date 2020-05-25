@@ -75,6 +75,7 @@ Status GetOpenGlErrors() {
 }
 
 Status GetEglError() {
+  #ifndef MAC_OPENGL
   EGLint error = eglGetError();
   switch (error) {
     case EGL_SUCCESS:
@@ -135,6 +136,8 @@ Status GetEglError() {
           "continue rendering.");
   }
   return UnknownError("EGL error: " + std::to_string(error));
+  #endif
+  return OkStatus();
 }
 
 }  // namespace gl

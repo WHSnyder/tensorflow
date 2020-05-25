@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/lite/delegates/gpu/gl/api2.h"
 
+#include <stdlib.h>
 #include <algorithm>
 #include <cstring>
 #include <string>
@@ -44,9 +45,20 @@ namespace gl {
 namespace {
 
 std::string GetShaderHeader(uint3 localsize) {
+
+  #ifdef MAC_OPENGL
+
+  std::cout << "HELLO FROM DOWN BELOW!!" << std::endl;
+
+  return absl::StrCat("#version 430\nlayout(local_size_x = ", localsize.x,
+                      ", local_size_y = ", localsize.y,
+                      ", local_size_z = ", localsize.z, ") in;\n");  
+  #else
+
   return absl::StrCat("#version 310 es\nlayout(local_size_x = ", localsize.x,
                       ", local_size_y = ", localsize.y,
                       ", local_size_z = ", localsize.z, ") in;\n");
+  #endif
 }
 
 // Wraps given SSBO into GlBuffer object that does not have ownership.
@@ -625,6 +637,13 @@ class InferenceEnvironmentImpl : public InferenceEnvironment {
       : env_options_(options) {}
 
   Status Init() {
+
+    #ifdef MAC_OPENGL
+
+    RETURN_IF_ERROR(RequestGpuInfo(&gpu_info_));
+
+    #else
+
     RETURN_IF_ERROR(EglEnvironment::NewEglEnvironment(&egl_env_));
 
     RETURN_IF_ERROR(RequestGpuInfo(&gpu_info_));
@@ -633,6 +652,9 @@ class InferenceEnvironmentImpl : public InferenceEnvironment {
       return InternalError(
           "OpenGL ES 3.1 or above is required to use OpenGL inference.");
     }
+
+    #endif
+
     if (!env_options_.queue) {
       queue_ = NewCommandQueue(gpu_info_);
       env_options_.queue = queue_.get();
@@ -664,7 +686,9 @@ class InferenceEnvironmentImpl : public InferenceEnvironment {
   }
 
  private:
+  #ifndef MAC_OPENGL
   std::unique_ptr<EglEnvironment> egl_env_;
+  #endif
   std::unique_ptr<CommandQueue> queue_;
   InferenceEnvironmentOptions env_options_;
   GpuInfo gpu_info_;

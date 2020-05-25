@@ -22,8 +22,10 @@ limitations under the License.
 #include <unordered_set>
 #include <vector>
 
+#ifndef MAC_OPENGL
 #include <EGL/egl.h>
 #include <GLES3/gl31.h>
+#endif
 #include "absl/types/span.h"
 #include "tensorflow/lite/builtin_ops.h"
 #include "tensorflow/lite/c/common.h"
@@ -140,7 +142,9 @@ class Delegate {
       return InternalError("Graph general transformations failed");
     }
 
+    #ifndef MAC_OPENGL
     if (!env_) RETURN_IF_ERROR(EglEnvironment::NewEglEnvironment(&env_));
+    #endif
 
     // TODO(impjdi): Remove code duplication.
     auto values = graph.values();
@@ -274,12 +278,17 @@ class Delegate {
   }
 
   Status Invoke(TfLiteContext* context) {
+
+    #ifndef MAC_OPENGL
+
     const EGLContext egl_context_at_delegate_init = env_->context().context();
     const EGLContext egl_context_at_delegate_invoke = eglGetCurrentContext();
     if (egl_context_at_delegate_init != egl_context_at_delegate_invoke) {
       return FailedPreconditionError(
           "Delegate should run on the same thread where it was initialized.");
     }
+
+    #endif
 
     // Push input data from a tensor to GPU.
     for (ValueId id : inputs_) {
@@ -355,7 +364,9 @@ class Delegate {
 
   TfLiteGpuDelegateOptions options_;
 
+  #ifndef MAC_OPENGL
   std::unique_ptr<EglEnvironment> env_;
+  #endif
   std::vector<ValueRef> tensors_;  // indexed by ValueId
   std::vector<ValueId> inputs_;
   std::vector<ValueId> outputs_;

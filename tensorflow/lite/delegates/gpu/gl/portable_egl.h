@@ -16,7 +16,12 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_PORTABLE_EGL_H_
 #define TENSORFLOW_LITE_DELEGATES_GPU_GL_PORTABLE_EGL_H_
 
+
+#ifndef MAC_OPENGL
+
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+
+#endif
 
 #endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_PORTABLE_EGL_H_

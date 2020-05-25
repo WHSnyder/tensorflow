@@ -31,6 +31,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "backend_opengl",
+    values = {
+        "backend": "opengl",
+    },
+)
+
 cc_library(
     name = "gl_delegate",
     srcs = ["gl_delegate.cc"],
@@ -142,8 +149,43 @@ cc_binary(
 )
 
 # build -c opt --config android_arm64 --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt --linkopt -s --strip always :libtensorflowlite_gpu_delegate.so
+# bazel build -c opt --copt -Os --copt -DMAC_OPENGL --copt -DTFLITE_GPU_BINARY_RELEASE  :libtensorflowlite_gpu_delegate.so --apple_platform_type=macos
+# bazel build --config "macos" -c opt --copt "-Os" --copt "-DMAC_OPENGL" --copt "-DTFLITE_GPU_BINARY_RELEASE" --verbose_failures :libtensorflowlite_gpu_delegate.so --apple_platform_type=macos
+# "-Wl,-soname=libtensorflowlite_gpu_delegate.so",
+
 cc_binary(
     name = "libtensorflowlite_gpu_delegate.so",
+    linkopts = [
+        "-Wl,-install_name,libtensorflowlite_gpu_delegate.so",
+    ] + select({
+        "//tensorflow:android": [
+            "-lEGL",
+            "-lGLESv3",
+            "-fvisibility=hidden",
+        ],
+        "//tensorflow:windows": [],
+        "//conditions:default": [
+            "-fvisibility=hidden",
+            "-L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/",
+            "-lGL",
+            # "-weak-lGLEW",
+        ],
+    }),
+    linkshared = 1,
+    linkstatic = 1,
+    tags = [
+        "nobuilder",
+        "notap",
+    ],
+    deps = [":gl_delegate",], #Get rid of gl_ when cleaning up...
+)
+
+#
+#  My attempt
+#
+# build -c opt --config android_arm64 --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt --linkopt -s --strip always :libtensorflowlite_gpu_delegate.so
+cc_binary(
+    name = "libtensorflowlite_gpu_delegate_WILLTEST.so",
     linkopts = [
         "-Wl,-soname=libtensorflowlite_gpu_delegate.so",
     ] + select({
@@ -165,6 +207,10 @@ cc_binary(
     ],
     deps = [":delegate"],
 )
+#
+#
+#
+#
 
 # bazel build -c opt --cpu ios_arm64 --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt -fvisibility=hidden --linkopt -s --strip always --cxxopt=-std=c++14 :libtensorflowlite_gpu_metal --apple_platform_type=ios
 ios_static_framework(
@@ -187,10 +233,12 @@ macos_dylib(
         "nobuilder",
         "notap",
     ],
-    deps = [
-        ":metal_delegate",
-        ":metal_delegate_internal",
-    ],
+    deps = [":metal_delegate", ":metal_delegate_internal"],
+    
+#    deps = select({
+#        ":backend_opengl":  [":free_opengl_delegate"],
+#        "//conditions:default": [":metal_delegate", ":metal_delegate_internal"],
+#    }), 
 )
 
 cc_library(

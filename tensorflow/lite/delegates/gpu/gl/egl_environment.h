@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+#ifndef MAC_OPENGL
 
 #ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_EGL_ENVIRONMENT_H_
 #define TENSORFLOW_LITE_DELEGATES_GPU_GL_EGL_ENVIRONMENT_H_
@@ -42,9 +43,13 @@ class EglEnvironment {
   EglEnvironment() = default;
   ~EglEnvironment();
 
+  #ifndef MAC_OPENGL
+
   const EglContext& context() const { return context_; }
   EGLDisplay display() const { return display_; }
   const GpuInfo& gpu_info() const { return gpu_info_; }
+
+  #endif
 
  private:
   Status Init();
@@ -52,10 +57,16 @@ class EglEnvironment {
   Status InitSurfacelessContext();
   Status InitPBufferContext();
 
+  #ifndef MAC_OPENGL
+
+
   EGLDisplay display_ = EGL_NO_DISPLAY;
   EglSurface surface_draw_;
   EglSurface surface_read_;
   EglContext context_;
+
+  #endif
+
   GpuInfo gpu_info_;
 
   // Strange hack that helps on Mali GPUs
@@ -70,3 +81,5 @@ class EglEnvironment {
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_EGL_ENVIRONMENT_H_
+
+#endif

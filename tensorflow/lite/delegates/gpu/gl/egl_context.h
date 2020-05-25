@@ -13,6 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#ifndef MAC_OPENGL
+
+
 #ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_EGL_CONTEXT_H_
 #define TENSORFLOW_LITE_DELEGATES_GPU_GL_EGL_CONTEXT_H_
 
@@ -100,3 +103,4 @@ Status CreatePBufferContext(EGLDisplay display, EGLContext shared_context,
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_DELEGATES_GPU_GL_EGL_CONTEXT_H_
+#endif

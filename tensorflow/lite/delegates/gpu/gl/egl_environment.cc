@@ -13,6 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#ifndef MAC_OPENGL
+
+
 #include "tensorflow/lite/delegates/gpu/gl/egl_environment.h"
 
 #include "absl/memory/memory.h"
@@ -29,6 +32,7 @@ namespace {
 // and OpenGL ES is reinitialized. See eglMakeCurrent
 
 Status InitDisplay(EGLDisplay* egl_display) {
+
   RETURN_IF_ERROR(
       TFLITE_GPU_CALL_EGL(eglGetDisplay, egl_display, EGL_DEFAULT_DISPLAY));
   if (*egl_display == EGL_NO_DISPLAY) {
@@ -40,6 +44,7 @@ Status InitDisplay(EGLDisplay* egl_display) {
   if (!is_initialized) {
     return InternalError("No EGL error, but eglInitialize failed");
   }
+
   return OkStatus();
 }
 
@@ -149,3 +154,5 @@ void EglEnvironment::ForceSyncTurning() {
 }  // namespace gl
 }  // namespace gpu
 }  // namespace tflite
+
+#endif
