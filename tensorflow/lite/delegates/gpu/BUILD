@@ -40,7 +40,7 @@ config_setting(
 
 cc_library(
     name = "gl_delegate",
-    srcs = ["gl_delegate.cc"],
+    srcs = ["gl_delegate.cc", "gl_delegate_pyexposure.cc",],
     hdrs = ["gl_delegate.h"],
     linkopts = select({
         "//tensorflow:android": [
@@ -168,6 +168,8 @@ cc_binary(
             "-fvisibility=hidden",
             "-L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/",
             "-lGL",
+            "-L/usr/local/Cellar/glew/2.1.0_1/lib", 
+            "-lGLEW",
             # "-weak-lGLEW",
         ],
     }),

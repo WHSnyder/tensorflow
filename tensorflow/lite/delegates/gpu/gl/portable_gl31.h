@@ -36,7 +36,7 @@ limitations under the License.
 #include <GLES3/gl31.h>
 
 #else
-
+#define GLEW_STATIC
 #include "tensorflow/lite/delegates/gpu/gl/glew.h"
 
 #endif

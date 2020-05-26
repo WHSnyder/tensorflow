@@ -20,6 +20,7 @@ limitations under the License.
 #ifndef MAC_OPENGL
 #include <GLES3/gl31.h>
 #else
+#define GLEW_STATIC
 #include "tensorflow/lite/delegates/gpu/gl/glew.h"
 #endif
 #include "absl/base/macros.h"

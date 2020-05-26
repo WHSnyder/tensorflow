@@ -21,11 +21,17 @@ limitations under the License.
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <stdlib.h>
+#include <iostream>
+
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifndef MAC_OPENGL
 #include <EGL/egl.h>
 #include <GLES3/gl31.h>
 #endif
+
 #include "absl/types/span.h"
 #include "tensorflow/lite/builtin_ops.h"
 #include "tensorflow/lite/c/common.h"
@@ -81,8 +87,11 @@ class Delegate {
     int tensor_index;
   };
 
- public:
+  public:
   explicit Delegate(const TfLiteGpuDelegateOptions* options) {
+
+    std::cout << "Constructing OPENGL delegate @PID " << getpid() << std::endl;
+
     if (options) {
       options_ = *options;
     } else {
@@ -141,6 +150,7 @@ class Delegate {
     if (!ApplyGeneralTransformations(&transformer)) {
       return InternalError("Graph general transformations failed");
     }
+    std::cout << "Preparing @PID " << getpid() << std::endl;
 
     #ifndef MAC_OPENGL
     if (!env_) RETURN_IF_ERROR(EglEnvironment::NewEglEnvironment(&env_));
@@ -162,6 +172,8 @@ class Delegate {
       tensors_[value->id] = {value->tensor.shape, 0};
     }
 
+    std::cout << "Preparing @1" << std::endl;
+
     std::unordered_set<int> tflite_graph_io;
 
     // Prepare graph inputs.
@@ -177,16 +189,24 @@ class Delegate {
         if (tensor->allocation_type == TfLiteAllocationType::kTfLiteMmapRo) {
           continue;
         }
+
+        std::cout << "Preparing @1.3" << std::endl;
+
+
         tflite_graph_io.insert(tensor_index);
         const auto* input = find_value(tensor_index);
         if (!input || tensor->type != TfLiteType::kTfLiteFloat32) {
           return NotFoundError("Input tensor is not found in the graph.");
         }
 
+        std::cout << "Preparing @1.5" << std::endl;
+
         inputs_.push_back(input->id);
         tensor->buffer_handle = input->id;
         tensor->delegate = &delegate_;
         tensors_[input->id].tensor_index = tensor_index;
+
+        std::cout << "Preparing @1.7" << std::endl;
 
         // Create phwc4 input buffer.
         // Check whether there is externally provided object is already in
@@ -201,10 +221,18 @@ class Delegate {
           RETURN_IF_ERROR(CreateReadWriteShaderStorageBuffer<float>(
               GetElementsSizeForPHWC4(input->tensor.shape), &buffer));
         }
+
+        std::cout << "Preparing @1.7" << std::endl;
+
         RETURN_IF_ERROR(
             phwc4_objects_.RegisterBuffer(input->id, std::move(buffer)));
+
+        std::cout << "Preparing @1.9" << std::endl;
+
       }
     }
+
+    std::cout << "Preparing @2" << std::endl;
 
     // Prepare graph outputs.
     //
@@ -222,10 +250,14 @@ class Delegate {
           return NotFoundError("Output tensor is not found in the graph.");
         }
 
+        std::cout << "Preparing @2.3" << std::endl;
+
         outputs_.push_back(output->id);
         tensor->buffer_handle = output->id;
         tensor->delegate = &delegate_;
         tensors_[output->id].tensor_index = tensor_index;
+
+        std::cout << "Preparing @2.6" << std::endl;
 
         // Create phwc4 output buffer.
         // Check whether there is externally provided object is already in
@@ -238,10 +270,15 @@ class Delegate {
           RETURN_IF_ERROR(CreateReadWriteShaderStorageBuffer<float>(
               GetElementsSizeForPHWC4(output->tensor.shape), &buffer));
         }
+
+        std::cout << "Preparing @2.9" << std::endl;
+
         RETURN_IF_ERROR(
             phwc4_objects_.RegisterBuffer(output->id, std::move(buffer)));
       }
     }
+
+    std::cout << "Preparing @3" << std::endl;
 
     // Create shaders to convert from/to phwc4.
     RETURN_IF_ERROR(ConverterBhwcToPhwc4::Create(&bhwc_to_phwc4_));
@@ -269,6 +306,8 @@ class Delegate {
     RETURN_IF_ERROR(Compile(compile_options, graph, tflite_graph_io, *shaders,
                             *workgroups_calculator, &compiled_model));
 
+    std::cout << "Preparing @4" << std::endl;
+
     // Create inference context.
     const RuntimeOptions runtime_options;
     RETURN_IF_ERROR(compiled_model->NewRun(runtime_options, &phwc4_objects_,
@@ -289,6 +328,8 @@ class Delegate {
     }
 
     #endif
+
+    std::cout << "Invoking OPENGL delegate @PID " << getpid() << std::endl;
 
     // Push input data from a tensor to GPU.
     for (ValueId id : inputs_) {
@@ -344,7 +385,7 @@ class Delegate {
 
   TfLiteDelegate* tflite_delegate() { return &delegate_; }
 
- private:
+  private:
   Status FindObject(ValueId id, ValueRef* ref) const {
     if (id >= tensors_.size()) {
       return InvalidArgumentError("Invalid buffer id");
@@ -424,6 +465,8 @@ TfLiteStatus DelegatePrepare(TfLiteContext* context, TfLiteDelegate* delegate) {
   const auto status = context->ReplaceNodeSubsetsWithDelegateKernels(
       context, kRegistration, ops_to_replace, delegate);
   TfLiteIntArrayFree(ops_to_replace);
+
+  std::cout << "Instead, prepared here!" << getpid() << std::endl;
   return status;
 }
 

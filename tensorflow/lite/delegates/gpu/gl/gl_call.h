@@ -18,6 +18,10 @@ limitations under the License.
 
 #include <string>
 #include <type_traits>
+#include <stdlib.h>
+#include <iostream>
+
+#include "tensorflow/lite/delegates/gpu/gl/glew.h"
 
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/gl/gl_errors.h"
@@ -78,6 +82,10 @@ struct Caller<void> {
 template <typename F, typename ErrorF, typename ResultT, typename... ParamsT>
 Status CallAndCheckError(const std::string& context, F func, ErrorF error_func,
                          ResultT* result, ParamsT&&... params) {
+
+  const unsigned char* glver = glGetString(GL_VERSION);
+  std::cout << "OpenGL version: " << glver << std::endl;
+
   return Caller<ResultT>()(context, func, error_func, result,
                            std::forward<ParamsT>(params)...);
 }
@@ -85,6 +93,10 @@ Status CallAndCheckError(const std::string& context, F func, ErrorF error_func,
 template <typename F, typename ErrorF, typename... Params>
 Status CallAndCheckError(const std::string& context, F func, ErrorF error_func,
                          Params&&... params) {
+
+  const unsigned char* glver = glGetString(GL_VERSION);
+  std::cout << "OpenGL version: " << glver << std::endl;
+
   return Caller<void>()(context, func, error_func,
                         std::forward<Params>(params)...);
 }
