@@ -87,9 +87,9 @@ cc_library(
 
 objc_library(
     name = "metal_delegate",
-    srcs = ["metal_delegate.mm"],
-    hdrs = ["metal_delegate.h"],
-    sdk_frameworks = ["Metal"],
+    srcs = ["metal_delegate.mm", "metal_delegate_pyexposure.mm"],
+    hdrs = ["metal_delegate.h", "metal_delegate_pyexposure.h"],
+    sdk_frameworks = ["Metal", "CoreGraphics"],
     deps = [
         "//tensorflow/lite:kernel_api",
         "//tensorflow/lite:minimal_logging",
@@ -236,11 +236,6 @@ macos_dylib(
         "notap",
     ],
     deps = [":metal_delegate", ":metal_delegate_internal"],
-    
-#    deps = select({
-#        ":backend_opengl":  [":free_opengl_delegate"],
-#        "//conditions:default": [":metal_delegate", ":metal_delegate_internal"],
-#    }), 
 )
 
 cc_library(

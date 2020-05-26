@@ -25,6 +25,7 @@ limitations under the License.
 #include <string>
 #include <thread>
 #include <vector>
+#include <iostream>
 
 #include "absl/types/span.h"
 #include "tensorflow/lite/builtin_ops.h"
@@ -45,6 +46,10 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/metal/inference_context.h"
 #include "tensorflow/lite/delegates/gpu/metal/runtime_options.h"
 #include "tensorflow/lite/minimal_logging.h"
+
+int funcfunc(){
+  return 1;
+}
 
 namespace tflite {
 namespace gpu {
@@ -230,12 +235,16 @@ class Delegate {
     GraphFloat32 graph;
     RETURN_IF_ERROR(BuildModel(context, delegate_params, &graph));
 
+    std::cout << "Marker 0" << std::endl; 
+
     // Apply general transformations on the graph.
     NullTransformationReporter reporter;
     ModelTransformer transformer(&graph, &reporter);
     if (!ApplyGeneralTransformations(&transformer)) {
       return InternalError("Graph general transformations failed");
     }
+
+    std::cout << "Marker 1" << std::endl; 
 
     // TODO(impjdi): Remove code duplication.
     auto values = graph.values();
@@ -245,6 +254,9 @@ class Delegate {
       }
       return nullptr;
     };
+
+    std::cout << "Marker 2" << std::endl; 
+
     tensors_.reserve(values.back()->id + 1);
     for (const auto* value : values) {
       if (tensors_.size() <= value->id) tensors_.resize(value->id + 1);
@@ -253,6 +265,8 @@ class Delegate {
           value->tensor.ref,    // .tensor_id
       };
     }
+
+    std::cout << "Marker 3" << std::endl; 
 
     // Prepare graph inputs.
     //
@@ -319,7 +333,9 @@ class Delegate {
     input_ids.reserve(inputs_.size());
     std::map<::tflite::gpu::ValueId, BHWC> input_dimensions;
     graph_inputs_.reserve(inputs_.size());
+
     for (const ValueId input : inputs_) {
+
       const auto& input_tensor = tensors_[input];
       const auto tensor_id = input_tensor.tensor_id;
       input_ids.push_back(input);
@@ -331,20 +347,24 @@ class Delegate {
           input_tensor.shape,  // .shape
           false,               // .set_externally
       });
+
       int bhwc_length = static_cast<int>(sizeof(float) * input_tensor.shape.DimensionsProduct());
       int bphwc4_length =
           static_cast<int>(storage_type_size * GetElementsSizeForPHWC4(input_tensor.shape));
       id<MTLBuffer> buffer = [metal_device_ newBufferWithLength:bhwc_length
                                                         options:MTLResourceStorageModeShared];
+
       input_output_buffers_[input] = buffer;
       if (options_.allow_precision_loss || input_tensor.shape.c != 4) {
         bphwc4_buffers_[input] = [metal_device_ newBufferWithLength:bphwc4_length
                                                             options:MTLResourceStorageModeShared];
         if (converter_to_BPHWC4_ == nil) {
+
           converter_to_BPHWC4_ =
               [[TFLBufferConvert alloc] initWithDevice:metal_device_
                                              isFloat16:options_.allow_precision_loss
                                        convertToPBHWC4:true];
+
           if (converter_to_BPHWC4_ == nil) {
             return InternalError("Error initialization of input buffer converter");
           }
