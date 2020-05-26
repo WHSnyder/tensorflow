@@ -23,7 +23,7 @@ namespace tflite {
 
 typedef void (*ErrorHandler)(const char*);
 
-
+//Possibly redundant...
 extern "C" {
 TFL_CAPI_EXPORT TfLiteDelegate* tflite_plugin_create_delegate(char** options_keys,
                                               char** options_values,
@@ -32,6 +32,5 @@ TFL_CAPI_EXPORT TfLiteDelegate* tflite_plugin_create_delegate(char** options_key
 
 TFL_CAPI_EXPORT void tflite_plugin_destroy_delegate(TfLiteDelegate* delegate);
 }
-
 
 }

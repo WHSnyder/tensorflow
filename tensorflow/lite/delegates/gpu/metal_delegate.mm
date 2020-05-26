@@ -172,6 +172,14 @@ class Delegate {
     int64_t tensor_id;
   };
 
+  /*
+  If you're having problems getting anything at all to work properly with Metal,
+  it might be because you don't have the CoreGraphics framework linked in your BUILD file
+  (keep Metal, of course) and/or those frameworks weren't found in the linker (in my case 
+  they weren't in the MacOS framework search paths).  Build seems to succeed regardless of the 
+  linker's ability to locate these frameworks...
+  */
+
  public:
   explicit Delegate(const TFLGpuDelegateOptions* options) {
     if (options) {
@@ -235,16 +243,12 @@ class Delegate {
     GraphFloat32 graph;
     RETURN_IF_ERROR(BuildModel(context, delegate_params, &graph));
 
-    std::cout << "Marker 0" << std::endl; 
-
     // Apply general transformations on the graph.
     NullTransformationReporter reporter;
     ModelTransformer transformer(&graph, &reporter);
     if (!ApplyGeneralTransformations(&transformer)) {
       return InternalError("Graph general transformations failed");
     }
-
-    std::cout << "Marker 1" << std::endl; 
 
     // TODO(impjdi): Remove code duplication.
     auto values = graph.values();
@@ -255,8 +259,6 @@ class Delegate {
       return nullptr;
     };
 
-    std::cout << "Marker 2" << std::endl; 
-
     tensors_.reserve(values.back()->id + 1);
     for (const auto* value : values) {
       if (tensors_.size() <= value->id) tensors_.resize(value->id + 1);
@@ -265,8 +267,6 @@ class Delegate {
           value->tensor.ref,    // .tensor_id
       };
     }
-
-    std::cout << "Marker 3" << std::endl; 
 
     // Prepare graph inputs.
     //
@@ -430,6 +430,7 @@ class Delegate {
   }
 
   Status Invoke(TfLiteContext* context) {
+
     if (options_.wait_type == TFLGpuDelegateWaitType::TFLGpuDelegateWaitTypeAggressive)
       gpu_alarm_clock_->Stop();
     // We need only synchronization so volatile works better than atomic which reads from global
