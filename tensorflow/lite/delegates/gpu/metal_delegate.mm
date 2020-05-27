@@ -177,11 +177,14 @@ class Delegate {
   it might be because you don't have the CoreGraphics framework linked in your BUILD file
   (keep Metal, of course) and/or those frameworks weren't found in the linker (in my case 
   they weren't in the MacOS framework search paths).  Build seems to succeed regardless of the 
-  linker's ability to locate these frameworks...
+  linker's ability to locate these frameworks.  
+
+  Metal could also provide a LOT more error checking functionality...
   */
 
  public:
   explicit Delegate(const TFLGpuDelegateOptions* options) {
+    
     if (options) {
       options_ = *options;
     } else {
@@ -305,6 +308,7 @@ class Delegate {
       tensor->delegate = &delegate_;
     }
 
+    //Setting storage precisions
     size_t storage_type_size;
     RuntimeOptions runtime_options;
     if (options_.allow_precision_loss) {
@@ -445,23 +449,31 @@ class Delegate {
 
     // CPU HWC input data conversion to PHWC4 and fill the GPU buffer
     for (const auto& input : graph_inputs_) {
-      if (input.set_externally) continue;
+      if (input.set_externally) continue; // <-set on gpu
       // A user provides data on CPU memory for this buffer - need to copy to MTLBuffer
 
       TfLiteTensor* tensor = context->tensors + input.tensor_id;
       void* gpu_ptr = [input_output_buffers_[input.id] contents];
       std::memcpy(gpu_ptr, tensor->data.f, input.shape.DimensionsProduct() * sizeof(float));
+
+      #ifndef ALL_EXTERNAL
+
       if (input_output_buffers_[input.id] == bphwc4_buffers_[input.id]) continue;
       [converter_to_BPHWC4_ convertWithEncoder:encoder
                                          shape:input.shape
                                   sourceBuffer:input_output_buffers_[input.id]
                                convertedBuffer:bphwc4_buffers_[input.id]];
-      if (external_command_encoder_ == nil) {
+      if (external_command_encoder_ == nil) { //Don't know what this does...
+
+        std::cout << "Yes we run this." << std::endl;
+
         [encoder endEncoding];
         [command_buffer commit];
         command_buffer = [command_queue_ commandBuffer];
         encoder = [command_buffer computeCommandEncoder];
       }
+
+      #endif
     }
 
     [inference_context_
@@ -489,6 +501,7 @@ class Delegate {
                 }
                 return encoder;
               }];
+
     for (const auto& output : graph_outputs_) {
       if (output.set_externally) continue;
       if (bphwc4_buffers_[output.id] == input_output_buffers_[output.id]) continue;
@@ -562,7 +575,7 @@ class Delegate {
       nullptr,                        // .CopyFromBufferHandle
       nullptr,                        // .CopyToBufferHandle
       nullptr,                        // .FreeBufferHandle
-      kTfLiteDelegateFlagsNone,       // .flags
+      kTfLiteDelegateFlagsNone,//kTfLiteDelegateFlagsAllowDynamicTensors,       // .flags
   };
 
   TFLGpuDelegateOptions options_;

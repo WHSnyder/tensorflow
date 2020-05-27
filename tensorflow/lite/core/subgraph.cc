@@ -1280,7 +1280,7 @@ TfLiteStatus Subgraph::ModifyGraphWithDelegate(TfLiteDelegate* delegate) {
     return kTfLiteError;
   }
 
-  if (!(delegate->flags & kTfLiteDelegateFlagsAllowDynamicTensors)) {
+  if (!(delegate->flags & kTfLiteDelegateFlagsAllowDynamicTensors)) { 
     int last_execution_plan_index_prepared;
     TF_LITE_ENSURE_OK(&context_, PrepareOpsStartingAt(
                                      0, &last_execution_plan_index_prepared));
