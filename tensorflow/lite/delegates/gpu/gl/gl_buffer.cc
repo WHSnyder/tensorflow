@@ -133,13 +133,13 @@ Status CreatePersistentBuffer(size_t size, GlPersistentBuffer* gl_buffer) {
   gl_buffer_internal::BufferId id;
   gl_buffer_internal::BufferBinder binder(GL_SHADER_STORAGE_BUFFER, id.id());
   RETURN_IF_ERROR(TFLITE_GPU_CALL_GL(
-      glBufferStorageEXT, GL_SHADER_STORAGE_BUFFER, size, nullptr,
-      GL_MAP_COHERENT_BIT_EXT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT |
-          GL_MAP_PERSISTENT_BIT_EXT));
+      glBufferStorage, GL_SHADER_STORAGE_BUFFER, size, nullptr,
+      GL_MAP_COHERENT_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT |
+          GL_MAP_PERSISTENT_BIT));
   void* data = nullptr;
   RETURN_IF_ERROR(TFLITE_GPU_CALL_GL(
       glMapBufferRange, &data, GL_SHADER_STORAGE_BUFFER, 0, size,
-      GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT));
+      GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
   *gl_buffer = GlPersistentBuffer{
       GL_SHADER_STORAGE_BUFFER, id.Release(), size, 0, true, data};
   return OkStatus();
