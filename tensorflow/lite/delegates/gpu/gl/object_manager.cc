@@ -20,6 +20,10 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/convert.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 
+#include <iostream>
+
+#define COUT(x,y) std::cout << x << " " << y << std::endl;
+
 namespace tflite {
 namespace gpu {
 namespace gl {
@@ -51,6 +55,9 @@ Status ObjectManager::RegisterBuffer(uint32_t id, GlBuffer buffer) {
   if (id >= buffers_.size()) {
     buffers_.resize(id + 1);
   }
+
+  COUT("Registered buffer at index ", id)
+
   buffers_[id] = absl::make_unique<GlBuffer>(std::move(buffer));
   return OkStatus();
 }
@@ -69,6 +76,9 @@ Status ObjectManager::RegisterTexture(uint32_t id, GlTexture texture) {
   if (id >= textures_.size()) {
     textures_.resize(id + 1);
   }
+
+  COUT("Registered texture at index ", id)
+
   textures_[id] = absl::make_unique<GlTexture>(std::move(texture));
   return OkStatus();
 }

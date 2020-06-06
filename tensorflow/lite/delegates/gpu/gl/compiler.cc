@@ -68,8 +68,11 @@ ObjectType ChooseFastestObjectType(const GpuInfo& gpu_info) {
                                           : ObjectType::BUFFER;
 }
 
+//So this ignores whatever's set in compiler_options.h?
 ObjectType ChooseFastestRefObjectType(const GpuInfo& gpu_info,
                                       const CompilationOptions& options) {
+  return ObjectType::TEXTURE; //hardcode test
+
   if (gpu_info.type != GpuType::ADRENO) {
     return ObjectType::BUFFER;
   }

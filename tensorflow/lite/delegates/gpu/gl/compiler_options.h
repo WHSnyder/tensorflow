@@ -40,7 +40,8 @@ struct CompilationOptions {
   bool inline_objects = true;  // TODO(akulik): unsupported
 
   // Can be only Textures or Buffers
-  ObjectType preferred_obj_type = ObjectType::UNKNOWN;
+  //ObjectType preferred_obj_type = ObjectType::UNKNOWN;
+  ObjectType preferred_obj_type = ObjectType::TEXTURE;
   // User has an option to choose between textures and buffers. Textures work
   // better on Adreno and buffers are better for Mali.
 
@@ -48,8 +49,8 @@ struct CompilationOptions {
   // efficient memory usage because they represent opaque memory blob, but
   // textures work better on Adreno.
   // TODO(akulik): may be better name?
-  ObjectType ref_obj_type = ObjectType::UNKNOWN;
-
+  //ObjectType ref_obj_type = ObjectType::UNKNOWN;
+  ObjectType ref_obj_type = ObjectType::TEXTURE;
   // If true, a user may change BATCH dimension at runtime. Otherwise, static
   // batch size will be fixed during compile time.
   // Dynamic mode uses less memory, while static mode may yield better

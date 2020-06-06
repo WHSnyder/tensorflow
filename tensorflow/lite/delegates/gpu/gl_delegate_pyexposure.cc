@@ -37,25 +37,9 @@ TfLiteDelegate* tflite_plugin_create_delegate(char** options_keys,
                                               char** options_values,
                                               size_t num_options,
                                               ErrorHandler error_handler) {
-  num_delegates_created++;
+  //auto opts = TfLiteGpuDelegateOptionsDefault();
 
-  for (int idx = 0; idx < num_options; idx++) {
-    if (std::strcmp("options_counter", options_keys[idx]) == 0) {
-      int int_value;
-      if (sscanf(options_values[idx], "%d", &int_value) == 1) {
-        options_counter += int_value;
-      }
-    } else if (std::strcmp("fail", options_keys[idx]) == 0) {
-      if (error_handler) error_handler("Fail argument sent.");
-      printf("FAIL\n");
-      return nullptr;
-    }
-  }
-
-  printf("Starting delegate setup\n");
-  auto opts = TfLiteGpuDelegateOptionsDefault();
-
-  TfLiteDelegate* ptr = TfLiteGpuDelegateCreate(&opts);
+  TfLiteDelegate* ptr = TfLiteGpuDelegateCreate(nullptr);
 
   return ptr;
 }
@@ -65,14 +49,7 @@ void set_destroy_callback(int (*callback)(const char* s)) {
 }
 
 void tflite_plugin_destroy_delegate(TfLiteDelegate* delegate) {
-  num_delegates_destroyed++;
-  delete delegate;
-  if (destruction_callback) {
-    destruction_callback("test_delegate");
-    // destruction_callback is a global variable,
-    // so it should be set to nullptr here to avoid crashes
-    destruction_callback = nullptr;
-  }
+  TfLiteGpuDelegateDelete(delegate);
 }
 
 void initialize_counters() {

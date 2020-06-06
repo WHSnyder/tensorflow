@@ -15,6 +15,9 @@ limitations under the License.
 
 #include "tensorflow/lite/delegates/gpu/gl/gl_texture.h"
 
+#include <stdlib.h>
+#include <iostream>
+
 #include "tensorflow/lite/delegates/gpu/common/data_type.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/types.h"
@@ -194,6 +197,9 @@ Status CreateReadOnlyRgba2dImageTexture(DataType data_type, const uint2& size,
   GLenum type = ToTextureDataType(data_type);
   gl_texture_internal::TextureId id;
   gl_texture_internal::TextureBinder binder(kTarget, id.id());
+
+  std::cout << "Allocating tex: x " << size.x << " y " << size.y << std::endl;
+
   RETURN_IF_ERROR(SetTextureWrapAndFilter(kTarget, internal_format));
   RETURN_IF_ERROR(TFLITE_GPU_CALL_GL(glTexStorage2D, kTarget,
                                      /* num_levels = */ 1, internal_format,
@@ -275,6 +281,9 @@ Status CreateReadOnlyImageTextureF16(const uint3& size,
 
 Status CreateReadWriteRgbaImageTexture(DataType data_type, const uint2& size,
                                        GlTexture* gl_texture) {
+
+  std::cout << "Allocating tex: x " << size.x << " y " << size.y << std::endl;
+  
   const GLenum kTarget = GL_TEXTURE_2D;
   const GLenum internal_format = ToTextureInternalFormat(data_type);
   gl_texture_internal::TextureId id;

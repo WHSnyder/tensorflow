@@ -19,6 +19,7 @@ limitations under the License.
 #include <cstring>
 #include <functional>
 #include <vector>
+#include <iostream>
 
 #include "absl/types/span.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
@@ -44,7 +45,7 @@ class GlBuffer {
         id_(id),
         bytes_size_(bytes_size),
         offset_(offset),
-        has_ownership_(has_ownership) {}
+        has_ownership_(has_ownership){}
 
   // Creates invalid buffer.
   GlBuffer() : GlBuffer(GL_INVALID_ENUM, GL_INVALID_INDEX, 0, 0, false) {}

@@ -16,6 +16,7 @@ limitations under the License.
 #include "tensorflow/lite/core/subgraph.h"
 
 #include <algorithm>
+#include <iostream>
 
 #include "tensorflow/lite/arena_planner.h"
 #include "tensorflow/lite/c/common.h"
@@ -355,6 +356,8 @@ TfLiteStatus Subgraph::ReplaceNodeSubsetsWithDelegateKernels(
   std::vector<NodeSubset> node_subsets;
   PartitionGraphIntoIndependentNodeSubsets(&info, nodes_to_replace,
                                            &node_subsets);
+
+  std::cout << "Num subsets = " << node_subsets.size() << std::endl;
 
   TFLITE_LOG(
       tflite::TFLITE_LOG_INFO,

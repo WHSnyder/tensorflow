@@ -20,6 +20,7 @@ limitations under the License.
 #include <cstdint>
 #include <cstring>
 #include <utility>
+#include <iostream>
 
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/context_util.h"
@@ -203,6 +204,9 @@ TfLiteStatus Interpreter::ReleaseNonPersistentMemory() {
 }
 
 TfLiteStatus Interpreter::Invoke() {
+
+  std::cout << "Invoking with " << subgraphs_.size() << " subgraphs" << std::endl;
+
   TF_LITE_ENSURE_STATUS(primary_subgraph().Invoke());
 
   if (!allow_buffer_handle_output_) {
