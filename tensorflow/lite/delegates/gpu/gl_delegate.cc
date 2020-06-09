@@ -135,6 +135,7 @@ class Delegate {
                                /* has_ownership = */ false));
   }
 
+
   Status Prepare(TfLiteContext* context,
                  const TfLiteDelegateParams* delegate_params) {
     // Extract TFLite delegate execution plan from the context and convert it
@@ -197,7 +198,7 @@ class Delegate {
         tensors_[input->id].tensor_index = tensor_index;
 
         // Create phwc4 input buffer.
-        // Check whether there is externally provided object is already in
+        // Check whether there is an externally provided object already in
         // PHWC4. If yes, we may skip conversion step.
         // We need to keep same buffer in bhwc_objects_ to indicate there is
         // externally provided buffer.
@@ -305,8 +306,6 @@ class Delegate {
       const ValueRef& ref = tensors_[id];
       auto external_object = bhwc_objects_.FindBuffer(ref.tensor_index);
 
-      std::cout << "Input buffer at " << ref.tensor_index << std::endl;
-
       if (external_object) {
         // Use input from GPU.
         // Conversion is needed only when external object is not phwc4.
@@ -331,8 +330,6 @@ class Delegate {
     for (ValueId id : outputs_) {
       const ValueRef& ref = tensors_[id];
       auto external_object = bhwc_objects_.FindBuffer(ref.tensor_index);
-
-      std::cout << "Output buffer at " << ref.tensor_index << std::endl;
 
       if (external_object) {
         // Convert data from PHWC4 to BHWC and leave it in GPU object.
@@ -514,11 +511,11 @@ TfLiteStatus TfLiteGpuDelegateBindBufferToTensor(TfLiteDelegate* delegate,
 }
 
 TfLiteStatus TfLiteGpuDelegateBindTextureToTensor(TfLiteDelegate* delegate,
-                                                 GLuint buffer,
+                                                 GLuint texture,
                                                  int tensor_index) {
   auto* gpu_delegate = tflite::gpu::gl::GetGpuDelegate(delegate);
   return gpu_delegate &&
-                 gpu_delegate->BindBufferToTensor(buffer, tensor_index).ok()
+                 gpu_delegate->BindTextureToTensor(buffer, tensor_index).ok()
              ? kTfLiteOk
              : kTfLiteError;
 }
