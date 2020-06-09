@@ -304,6 +304,9 @@ class Delegate {
     for (ValueId id : inputs_) {
       const ValueRef& ref = tensors_[id];
       auto external_object = bhwc_objects_.FindBuffer(ref.tensor_index);
+
+      std::cout << "Input buffer at " << ref.tensor_index << std::endl;
+
       if (external_object) {
         // Use input from GPU.
         // Conversion is needed only when external object is not phwc4.
@@ -328,6 +331,9 @@ class Delegate {
     for (ValueId id : outputs_) {
       const ValueRef& ref = tensors_[id];
       auto external_object = bhwc_objects_.FindBuffer(ref.tensor_index);
+
+      std::cout << "Output buffer at " << ref.tensor_index << std::endl;
+
       if (external_object) {
         // Convert data from PHWC4 to BHWC and leave it in GPU object.
         // Conversion is needed only when external object is not phwc4.

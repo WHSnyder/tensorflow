@@ -51,6 +51,7 @@ struct CompilationOptions {
   // TODO(akulik): may be better name?
   //ObjectType ref_obj_type = ObjectType::UNKNOWN;
   ObjectType ref_obj_type = ObjectType::TEXTURE;
+  
   // If true, a user may change BATCH dimension at runtime. Otherwise, static
   // batch size will be fixed during compile time.
   // Dynamic mode uses less memory, while static mode may yield better
