@@ -24,6 +24,8 @@ limitations under the License.
 #include <stdlib.h>
 #include <iostream>
 
+#define COUT(x) std::cout << x << std::endl;
+
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -135,6 +137,14 @@ class Delegate {
                                /* has_ownership = */ false));
   }
 
+  /*
+  GLuint GetInputSSBO(int tensor_index){
+
+  }
+
+  GLuint GetOutputSSBO(int tensor_index){
+
+  }*/
 
   Status Prepare(TfLiteContext* context,
                  const TfLiteDelegateParams* delegate_params) {
@@ -285,20 +295,21 @@ class Delegate {
     RETURN_IF_ERROR(compiled_model->NewRun(runtime_options, &phwc4_objects_,
                                            command_queue_.get(),
                                            &inference_context_));
+
+    COUT("Prepared delegate")
+
     return OkStatus();
   }
 
   Status Invoke(TfLiteContext* context) {
 
     #ifndef MAC_OPENGL
-
     const EGLContext egl_context_at_delegate_init = env_->context().context();
     const EGLContext egl_context_at_delegate_invoke = eglGetCurrentContext();
     if (egl_context_at_delegate_init != egl_context_at_delegate_invoke) {
       return FailedPreconditionError(
           "Delegate should run on the same thread where it was initialized.");
     }
-
     #endif
 
     // Push input data from a tensor to GPU.
@@ -307,6 +318,8 @@ class Delegate {
       auto external_object = bhwc_objects_.FindBuffer(ref.tensor_index);
 
       if (external_object) {
+
+        //std::cout << "Input buffer is external GPU object" << std::endl;
         // Use input from GPU.
         // Conversion is needed only when external object is not phwc4.
         if (!IsPHWC4(tensors_[id].shape)) {
@@ -332,6 +345,7 @@ class Delegate {
       auto external_object = bhwc_objects_.FindBuffer(ref.tensor_index);
 
       if (external_object) {
+
         // Convert data from PHWC4 to BHWC and leave it in GPU object.
         // Conversion is needed only when external object is not phwc4.
         if (!IsPHWC4(tensors_[id].shape)) {
@@ -339,6 +353,7 @@ class Delegate {
               phwc4_to_bhwc_.Convert(ref.shape, *phwc4_objects_.FindBuffer(id),
                                      command_queue_.get(), external_object));
         }
+
       } else {
         // Wait until all GPU command are completed. This call leads to a lower
         // processing latency because a buffer reading below will not stall if
@@ -352,6 +367,9 @@ class Delegate {
         RETURN_IF_ERROR(CopyFromBufferHandle(id, &tensor));
       }
     }
+
+    COUT("Delegate invoked")
+
     return OkStatus();
   }
 
@@ -380,6 +398,7 @@ class Delegate {
   #ifndef MAC_OPENGL
   std::unique_ptr<EglEnvironment> env_;
   #endif
+  
   std::vector<ValueRef> tensors_;  // indexed by ValueId
   std::vector<ValueId> inputs_;
   std::vector<ValueId> outputs_;
@@ -510,7 +529,7 @@ TfLiteStatus TfLiteGpuDelegateBindBufferToTensor(TfLiteDelegate* delegate,
              : kTfLiteError;
 }
 
-TfLiteStatus TfLiteGpuDelegateBindTextureToTensor(TfLiteDelegate* delegate,
+/*TfLiteStatus TfLiteGpuDelegateBindTextureToTensor(TfLiteDelegate* delegate,
                                                  GLuint texture,
                                                  int tensor_index) {
   auto* gpu_delegate = tflite::gpu::gl::GetGpuDelegate(delegate);
@@ -518,7 +537,7 @@ TfLiteStatus TfLiteGpuDelegateBindTextureToTensor(TfLiteDelegate* delegate,
                  gpu_delegate->BindTextureToTensor(buffer, tensor_index).ok()
              ? kTfLiteOk
              : kTfLiteError;
-}
+}*/
 
 #ifndef TFLITE_GPU_BINARY_RELEASE
 const uint8_t* TfLiteGpuDelegateGetModelMetadata(const void* tflite_model) {

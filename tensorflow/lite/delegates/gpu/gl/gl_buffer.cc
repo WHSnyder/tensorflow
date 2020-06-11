@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/lite/delegates/gpu/gl/gl_buffer.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
+#include <iostream>
 
 namespace tflite {
 namespace gpu {
@@ -69,6 +70,7 @@ GlBuffer::~GlBuffer() { Invalidate(); }
 
 void GlBuffer::Invalidate() {
   if (has_ownership_ && id_ != GL_INVALID_INDEX) {
+    std::cout << "Deleting GL buffer with id " << id_ << std::endl;
     TFLITE_GPU_CALL_GL(glDeleteBuffers, 1, &id_).IgnoreError();
     id_ = GL_INVALID_INDEX;
   }

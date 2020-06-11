@@ -149,9 +149,8 @@ cc_binary(
 )
 
 # build -c opt --config android_arm64 --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt --linkopt -s --strip always :libtensorflowlite_gpu_delegate.so
-# bazel build -c opt --copt -Os --copt -DMAC_OPENGL --copt -DTFLITE_GPU_BINARY_RELEASE  :libtensorflowlite_gpu_delegate.so --apple_platform_type=macos
+# build -c opt --config linux --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt --linkopt -s --strip always :libtensorflowlite_gpu_delegate.so
 
-# bazel build --config "macos" -c opt --copt "-Os" --copt "-DMAC_OPENGL" --copt "-DTFLITE_GPU_BINARY_RELEASE" --verbose_failures :libtensorflowlite_gpu_delegate.so --apple_platform_type=macos
 # bazel build --config "linux" -c opt --copt "-Os" --copt "-DMAC_OPENGL" --copt "-DTFLITE_GPU_BINARY_RELEASE" --verbose_failures :libtensorflowlite_gpu_delegate.so 
 
 # "-Wl,-soname=libtensorflowlite_gpu_delegate.so",
@@ -159,7 +158,6 @@ cc_binary(
 cc_binary(
     name = "libtensorflowlite_gpu_delegate.so",
     linkopts = [
-        # for MAC: "-Wl,-install_name,libtensorflowlite_gpu_delegate.so",
         "-Wl,-soname,libtensorflowlite_gpu_delegate.so",
     ] + select({
         "//tensorflow:android": [

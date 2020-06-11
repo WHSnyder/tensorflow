@@ -139,8 +139,8 @@ TFL_CAPI_EXPORT TfLiteStatus TfLiteGpuDelegateBindBufferToTensor(
     TfLiteDelegate* delegate, GLuint buffer, int tensor_index);
 
 //Binds GL texture to input or output tensor 
-TFL_CAPI_EXPORT TfLiteStatus TfLiteGpuDelegateBindTextureToTensor(
-    TfLiteDelegate* delegate, GLuint texture, int tensor_index);
+//TFL_CAPI_EXPORT TfLiteStatus TfLiteGpuDelegateBindTextureToTensor(
+//   TfLiteDelegate* delegate, GLuint texture, int tensor_index);
 
 #ifndef TFLITE_GPU_BINARY_RELEASE
 // Returns the metadata of `tflite_model` if it has one, or `nullptr` otherwise.
