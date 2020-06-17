@@ -34,6 +34,8 @@ limitations under the License.
 #include <GLES3/gl31.h>
 #endif
 
+#include "glew.h"
+
 #include "absl/types/span.h"
 #include "tensorflow/lite/builtin_ops.h"
 #include "tensorflow/lite/c/common.h"
@@ -97,7 +99,7 @@ class Delegate {
     } else {
       // Default options.
       options_.metadata = nullptr;
-      options_.compile_options.precision_loss_allowed = 0;
+      options_.compile_options.precision_loss_allowed = 1;
       options_.compile_options.preferred_gl_object_type =
           TFLITE_GL_OBJECT_TYPE_FASTEST;
       options_.compile_options.dynamic_batch_enabled = 0;
@@ -333,11 +335,34 @@ class Delegate {
         RETURN_IF_ERROR(CopyToBufferHandle(id, &tensor));
       }
     }
+    
+    if (0){
+      //Bench mark interpreter time
+      GLuint64 startTime, stopTime;
+      unsigned int queryID[2];      
+      glGenQueries(2, queryID);
+      glQueryCounter(queryID[0], GL_TIMESTAMP);
 
-    // Run inference.
-    RETURN_IF_ERROR(inference_context_->Reset());
-    RETURN_IF_ERROR(inference_context_->Execute());
+      RETURN_IF_ERROR(inference_context_->Reset());
+      RETURN_IF_ERROR(inference_context_->Execute());
 
+      glQueryCounter(queryID[1], GL_TIMESTAMP);
+
+      GLuint64 stopTimerAvailable = 0;
+      int tc = 0;
+      while (!stopTimerAvailable) {
+          glGetQueryObjectui64v(queryID[1], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
+          tc++;
+      }
+       
+      glGetQueryObjectui64v(queryID[0], GL_QUERY_RESULT, &startTime);
+      glGetQueryObjectui64v(queryID[1], GL_QUERY_RESULT, &stopTime);
+       
+      printf("Time spent on the GPU: %lu ms, waited %d times\n", (stopTime - startTime) / 1000000, tc);
+    } else {
+      RETURN_IF_ERROR(inference_context_->Reset());
+      RETURN_IF_ERROR(inference_context_->Execute());
+    }
     // Push output data from GPU to a tensor.
     bool finished_gpu_processing = false;
     for (ValueId id : outputs_) {
@@ -353,7 +378,6 @@ class Delegate {
               phwc4_to_bhwc_.Convert(ref.shape, *phwc4_objects_.FindBuffer(id),
                                      command_queue_.get(), external_object));
         }
-
       } else {
         // Wait until all GPU command are completed. This call leads to a lower
         // processing latency because a buffer reading below will not stall if
@@ -367,8 +391,6 @@ class Delegate {
         RETURN_IF_ERROR(CopyFromBufferHandle(id, &tensor));
       }
     }
-
-    COUT("Delegate invoked")
 
     return OkStatus();
   }
@@ -493,7 +515,7 @@ TfLiteStatus DelegateCopyToBufferHandle(TfLiteContext* context,
 
 TfLiteGlCompileOptions TfLiteGlCompileOptionsDefault() {
   TfLiteGlCompileOptions options;
-  options.precision_loss_allowed = 0;
+  options.precision_loss_allowed = 1;
   options.preferred_gl_object_type = TFLITE_GL_OBJECT_TYPE_FASTEST;
   options.dynamic_batch_enabled = 0;
   options.inline_parameters = 0;

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/delegates/gpu/gl/kernels/mean.h"
+#include "tensorflow/lite/delegates/gpu/gl/kernels/mean_reduce.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -30,7 +30,7 @@ namespace gpu {
 namespace gl {
 namespace {
 
-class Mean : public NodeShader {
+class MeanReduce : public NodeShader {
  public:
   Status GenerateCode(const GenerationContext& ctx,
                       GeneratedCode* generated_code) const final {
@@ -47,20 +47,16 @@ class Mean : public NodeShader {
         {"input_data_0_w", input->tensor.shape.w}};
 
     std::string source = R"(
-      // Shaders may be compiled with a precision hint mediump, which means that
-      // GLSL compiler may drop the size of float data type from 32 to 16 bits.
-      // If "sum" and "size" variables are 16bit floats, their values range
-      // become not enough for providing a good results accuracy. That is why
-      // their precision is forced to be 32bit by using highp qualifier.
+      //MeanReduce
 
       highp vec4 sum = vec4(0.0);
       highp float size = float($input_data_0_w$ * $input_data_0_h$);
-      for (int w = 0; w < $input_data_0_w$; w+=4) { //change back to ++
-        for (int h = 0; h < $input_data_0_h$; h+=4) { //change back to ++
+      for (int w = 0; w < $input_data_0_w$; w++) {
+        for (int h = 0; h < $input_data_0_h$; h++) {
           sum += $input_data_0[w, h, gid.z]$;
         }
       }
-      value_0 = (sum / size) * 16.0;
+      value_0 = sum / size;
     )";
     *generated_code = {
         /*parameters=*/std::move(parameters),

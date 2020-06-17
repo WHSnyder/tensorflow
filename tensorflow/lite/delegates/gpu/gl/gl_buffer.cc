@@ -70,7 +70,7 @@ GlBuffer::~GlBuffer() { Invalidate(); }
 
 void GlBuffer::Invalidate() {
   if (has_ownership_ && id_ != GL_INVALID_INDEX) {
-    std::cout << "Deleting GL buffer with id " << id_ << std::endl;
+    //std::cout << "Deleting GL buffer with id " << id_ << std::endl;
     TFLITE_GPU_CALL_GL(glDeleteBuffers, 1, &id_).IgnoreError();
     id_ = GL_INVALID_INDEX;
   }

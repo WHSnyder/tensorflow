@@ -56,7 +56,7 @@ Status ObjectManager::RegisterBuffer(uint32_t id, GlBuffer buffer) {
     buffers_.resize(id + 1);
   }
 
-  COUT("Registered buffer at index ", id)
+  //COUT("Registered buffer at index ", id)
 
   buffers_[id] = absl::make_unique<GlBuffer>(std::move(buffer));
   return OkStatus();
@@ -77,7 +77,7 @@ Status ObjectManager::RegisterTexture(uint32_t id, GlTexture texture) {
     textures_.resize(id + 1);
   }
 
-  COUT("Registered texture at index ", id)
+  //COUT("Registered texture at index ", id)
 
   textures_[id] = absl::make_unique<GlTexture>(std::move(texture));
   return OkStatus();

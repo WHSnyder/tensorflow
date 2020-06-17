@@ -16,6 +16,7 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/gl/gl_program.h"
 
 #include <string>
+#include <iostream>
 
 #include "absl/types/variant.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
@@ -23,6 +24,8 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/gl/gl_call.h"
 #include "tensorflow/lite/delegates/gpu/gl/gl_errors.h"
 #include "tensorflow/lite/delegates/gpu/gl/variable.h"
+
+#define COUT(x) std::cout << x << std::endl; 
 
 namespace tflite {
 namespace gpu {
@@ -212,6 +215,7 @@ Status GlProgram::Dispatch(const uint3& workgroups) const {
   if (workgroups.x == 0 || workgroups.y == 0 || workgroups.z == 0) {
     return InvalidArgumentError("Invalid workgroups");
   }
+
   RETURN_IF_ERROR(TFLITE_GPU_CALL_GL(glUseProgram, id_));
   return TFLITE_GPU_CALL_GL(glDispatchCompute, workgroups.x, workgroups.y,
                             workgroups.z);

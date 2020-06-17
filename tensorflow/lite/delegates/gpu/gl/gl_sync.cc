@@ -14,12 +14,17 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/lite/delegates/gpu/gl/gl_sync.h"
+#include <iostream>
+
 
 #ifdef __ARM_ACLE
 #include <arm_acle.h>
 #endif  // __ARM_ACLE
 
 #include "tensorflow/lite/delegates/gpu/gl/gl_errors.h"
+
+
+#define COUT(x) std::cout << x << std::endl;
 
 namespace tflite {
 namespace gpu {
@@ -29,6 +34,7 @@ Status GlSyncWait() {
   GlSync sync;
   RETURN_IF_ERROR(GlSync::NewSync(&sync));
   // Flush sync and loop afterwards without it.
+  COUT("WAITSYNCING")
   GLenum status = glClientWaitSync(sync.sync(), GL_SYNC_FLUSH_COMMANDS_BIT,
                                    /* timeout ns = */ 0);
   while (true) {
@@ -52,6 +58,7 @@ Status GlActiveSyncWait() {
   // Since creating a Sync object is itself a GL command it *must* be flushed.
   // Otherwise glGetSynciv may never succeed. Perform a flush with
   // glClientWaitSync call.
+  COUT("About to waitsync")
   GLenum status = glClientWaitSync(sync.sync(), GL_SYNC_FLUSH_COMMANDS_BIT,
                                    /* timeout ns = */ 0);
   switch (status) {
@@ -81,7 +88,7 @@ Status GlActiveSyncWait() {
 Status GlShaderSync::NewSync(GlShaderSync* gl_sync) {
   GlShaderSync sync;
   RETURN_IF_ERROR(CreatePersistentBuffer(sizeof(int), &sync.flag_buffer_));
-  static const std::string* kCode = new std::string(R"(#version 310 es
+  static const std::string* kCode = new std::string(R"(#version 430
   layout(local_size_x = 1, local_size_y = 1) in;
   layout(std430) buffer;
   layout(binding = 0) buffer Output {
@@ -111,6 +118,7 @@ Status GlShaderSync::Wait() {
   RETURN_IF_ERROR(flag_program_.Dispatch({1, 1, 1}));
   // glFlush must be called to upload GPU task. Adreno won't start executing
   // the task without glFlush.
+  COUT("flushing")
   glFlush();
   // Wait for the value is being updated by the shader.
   while (*flag_ptr_ != 1) {

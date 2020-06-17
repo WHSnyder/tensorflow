@@ -48,14 +48,12 @@ std::string GetShaderHeader(uint3 localsize) {
 
   #ifdef MAC_OPENGL
 
-  std::cout << "HELLO FROM DOWN BELOW!!" << std::endl;
-
   return absl::StrCat("#version 430\nlayout(local_size_x = ", localsize.x,
                       ", local_size_y = ", localsize.y,
                       ", local_size_z = ", localsize.z, ") in;\n");  
   #else
 
-  return absl::StrCat("#version 310 es\nlayout(local_size_x = ", localsize.x,
+  return absl::StrCat("#version 430\nlayout(local_size_x = ", localsize.x,
                       ", local_size_y = ", localsize.y,
                       ", local_size_z = ", localsize.z, ") in;\n");
   #endif
