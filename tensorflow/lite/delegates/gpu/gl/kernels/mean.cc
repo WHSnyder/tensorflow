@@ -55,12 +55,12 @@ class Mean : public NodeShader {
 
       highp vec4 sum = vec4(0.0);
       highp float size = float($input_data_0_w$ * $input_data_0_h$);
-      for (int w = 0; w < $input_data_0_w$; w+=4) { //change back to ++
-        for (int h = 0; h < $input_data_0_h$; h+=4) { //change back to ++
+      for (int w = 0; w < $input_data_0_w$; w+=8) { //change back to ++
+        for (int h = 0; h < $input_data_0_h$; h+=8) { //change back to ++
           sum += $input_data_0[w, h, gid.z]$;
         }
       }
-      value_0 = (sum / size) * 16.0;
+      value_0 = (sum / size) * 64.0;
     )";
     *generated_code = {
         /*parameters=*/std::move(parameters),

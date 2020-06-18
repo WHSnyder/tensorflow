@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_MEAN_H_
-#define TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_MEAN_H_
+#ifndef TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_MEAN_REDUCE_H_
+#define TENSORFLOW_LITE_DELEGATES_GPU_GL_KERNELS_MEAN_REDUCE_H_
 
 #include <memory>
 
@@ -25,7 +25,7 @@ namespace tflite {
 namespace gpu {
 namespace gl {
 
-std::unique_ptr<NodeShader> NewMeanNodeShader();
+std::unique_ptr<NodeShader> NewMeanReduceNodeShader();
 
 }  // namespace gl
 }  // namespace gpu

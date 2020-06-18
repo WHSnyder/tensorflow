@@ -205,8 +205,6 @@ TfLiteStatus Interpreter::ReleaseNonPersistentMemory() {
 
 TfLiteStatus Interpreter::Invoke() {
 
-  std::cout << "Invoking with " << subgraphs_.size() << " subgraphs" << std::endl;
-
   TF_LITE_ENSURE_STATUS(primary_subgraph().Invoke());
 
   if (!allow_buffer_handle_output_) {

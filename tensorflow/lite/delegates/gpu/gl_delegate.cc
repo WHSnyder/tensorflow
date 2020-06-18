@@ -139,15 +139,6 @@ class Delegate {
                                /* has_ownership = */ false));
   }
 
-  /*
-  GLuint GetInputSSBO(int tensor_index){
-
-  }
-
-  GLuint GetOutputSSBO(int tensor_index){
-
-  }*/
-
   Status Prepare(TfLiteContext* context,
                  const TfLiteDelegateParams* delegate_params) {
     // Extract TFLite delegate execution plan from the context and convert it

@@ -47,7 +47,13 @@ cc_library(
             "-lEGL",
             "-lGLESv3",
         ],
-        "//conditions:default": [],
+        "//conditions:default": [
+            "-fvisibility=hidden",
+            "-Wl,--no-undefined",
+            "-L/usr/lib/x86_64-linux-gnu/", 
+            "-lGLEW",
+            "-lGL",
+        ],
     }),
     deps = [
         "@com_google_absl//absl/base:core_headers",
@@ -123,30 +129,7 @@ objc_library(
     alwayslink = 1,
 )
 
-# build -c opt --config android_arm64 --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt --linkopt -s --strip always :libtensorflowlite_gpu_gl.so
-cc_binary(
-    name = "libtensorflowlite_gpu_gl.so",
-    linkopts = [
-        "-Wl,-soname=libtensorflowlite_gpu_gl.so",
-    ] + select({
-        "//tensorflow:android": [
-            "-lEGL",
-            "-lGLESv3",
-            "-fvisibility=hidden",
-        ],
-        "//tensorflow:windows": [],
-        "//conditions:default": [
-            "-fvisibility=hidden",
-        ],
-    }),
-    linkshared = 1,
-    linkstatic = 1,
-    tags = [
-        "nobuilder",
-        "notap",
-    ],
-    deps = [":gl_delegate"],
-)
+
 
 # build -c opt --config android_arm64 --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt --linkopt -s --strip always :libtensorflowlite_gpu_delegate.so
 # build -c opt --config linux --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt --linkopt -s --strip always :libtensorflowlite_gpu_delegate.so
@@ -218,8 +201,8 @@ cc_library(
         "//tensorflow/lite/delegates/gpu/gl:portable",
         "@com_google_absl//absl/types:span",
         "@com_google_absl//absl/types:variant",
-        "@opencl_headers",
-        "@vulkan_headers//:vulkan_headers_no_prototypes",
+        #"@opencl_headers",
+        #"@vulkan_headers//:vulkan_headers_no_prototypes",
     ],
 )
 
@@ -242,16 +225,22 @@ cc_library(
             "-lEGL",
             "-lGLESv3",
         ],
-        "//conditions:default": [],
+        "//conditions:default": [
+            "-fvisibility=hidden",
+            "-Wl,--no-undefined",
+            "-L/usr/lib/x86_64-linux-gnu/", 
+            "-lGLEW",
+            "-lGL",
+        ],
     }),
     deps = [
         "//tensorflow/lite:kernel_api",
         "//tensorflow/lite:minimal_logging",
         "//tensorflow/lite/c:common",
         "//tensorflow/lite/delegates/gpu:api",
-        "//tensorflow/lite/delegates/gpu/cl:api",
-        "//tensorflow/lite/delegates/gpu/cl:opencl_wrapper",
-        "//tensorflow/lite/delegates/gpu/cl:tensor_type_util",
+        #"//tensorflow/lite/delegates/gpu/cl:api",
+        #"//tensorflow/lite/delegates/gpu/cl:opencl_wrapper",
+        #"//tensorflow/lite/delegates/gpu/cl:tensor_type_util",
         "//tensorflow/lite/delegates/gpu/common:model",
         "//tensorflow/lite/delegates/gpu/common:model_builder",
         "//tensorflow/lite/delegates/gpu/common:model_transformer",

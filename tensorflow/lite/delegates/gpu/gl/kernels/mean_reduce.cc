@@ -49,6 +49,15 @@ class MeanReduce : public NodeShader {
     std::string source = R"(
       //MeanReduce
 
+
+      //workgroup test size = 16
+      int inputSize = int($input_data_0_w$ * $input_data_0_h$);
+      shared float tempSums[floor($input_data_0_w$ * $input_data_0_h$ / 16) + 1];
+      
+      
+      
+
+      /*
       highp vec4 sum = vec4(0.0);
       highp float size = float($input_data_0_w$ * $input_data_0_h$);
       for (int w = 0; w < $input_data_0_w$; w++) {
@@ -56,17 +65,19 @@ class MeanReduce : public NodeShader {
           sum += $input_data_0[w, h, gid.z]$;
         }
       }
+
       value_0 = sum / size;
+      */
     )";
     *generated_code = {
         /*parameters=*/std::move(parameters),
         /*objects=*/{},
         /*shared_variables=*/{},
         /*workload=*/uint3(),
-        /*workgroup=*/uint3(1, 1, 4),
+        /*workgroup=*/uint3(16, 16, 4),
         /*source_code=*/std::move(source),
         /*input=*/IOStructure::ONLY_DEFINITIONS,
-        /*output=*/IOStructure::AUTO,
+        /*output=*/IOStructure::ONLY_DEFINITIONS,
     };
     return OkStatus();
   }

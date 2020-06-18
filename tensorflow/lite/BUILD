@@ -482,6 +482,10 @@ cc_test(
     ],
 )
 
+
+# bazel build -c opt --cxxopt=--std=c++14 --config=linux :tensorflowlite 
+# bazel build -c opt --cxxopt=--std=c++11 --config=linux //tensorflow/lite/c:libtensorflowlite_c.so
+
 # Shared lib target for convenience, pulls in the core runtime and builtin ops.
 # Note: This target is not yet finalized, and the exact set of exported (C/C++)
 # APIs is subject to change. The output library name is platform dependent:

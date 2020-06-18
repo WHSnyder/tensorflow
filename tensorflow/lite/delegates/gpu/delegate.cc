@@ -18,19 +18,27 @@ limitations under the License.
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 #include "absl/types/span.h"
 #include "tensorflow/lite/builtin_ops.h"
 #include "tensorflow/lite/delegates/gpu/api.h"
+
+#ifndef MAC_OPENGL
 #include "tensorflow/lite/delegates/gpu/cl/api.h"
 #include "tensorflow/lite/delegates/gpu/cl/opencl_wrapper.h"
 #include "tensorflow/lite/delegates/gpu/cl/tensor_type_util.h"
+#endif
+
 #include "tensorflow/lite/delegates/gpu/common/model.h"
 #include "tensorflow/lite/delegates/gpu/common/model_builder.h"
 #include "tensorflow/lite/delegates/gpu/common/model_transformer.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/gl/api2.h"
 #include "tensorflow/lite/minimal_logging.h"
+
+
+#define COUT(x) std::cout << x << std::endl;
 
 namespace tflite {
 namespace gpu {
@@ -95,8 +103,15 @@ class Delegate {
 
     std::unique_ptr<InferenceBuilder> builder;
     bool graph_is_destroyed;
+
+#ifndef MAC_OPENGL
     Status status = InitializeOpenClApi(&graph, &builder, &graph_is_destroyed);
+#else
+    Status status = OkStatus();
+#endif
+
     if (!status.ok()) {
+      COUT("Using OpenGL")
       context->ReportError(context, "%s", status.error_message().c_str());
       context->ReportError(context, "Falling back to OpenGL");
 
@@ -165,6 +180,8 @@ class Delegate {
   TfLiteDelegate* tflite_delegate() { return &delegate_; }
 
  private:
+
+#ifndef MAC_OPENGL
   Status InitializeOpenClApi(GraphFloat32* graph,
                              std::unique_ptr<InferenceBuilder>* builder,
                              bool* graph_is_destroyed) {
@@ -196,6 +213,7 @@ class Delegate {
                          "Initialized OpenCL-based API.");
     return OkStatus();
   }
+#endif
 
   Status InitializeOpenGlApi(GraphFloat32* graph,
                              std::unique_ptr<InferenceBuilder>* builder) {
@@ -225,7 +243,9 @@ class Delegate {
   };
 
   TfLiteGpuDelegateOptionsV2 options_;
+#ifndef MAC_OPENGL
   std::unique_ptr<cl::InferenceEnvironment> cl_environment_;
+#endif MAC_OPENGL
   std::unique_ptr<gl::InferenceEnvironment> gl_environment_;
   std::unique_ptr<InferenceRunner> runner_;
   std::vector<int64_t> input_indices_;
@@ -320,4 +340,15 @@ TfLiteDelegate* TfLiteGpuDelegateV2Create(
 
 void TfLiteGpuDelegateV2Delete(TfLiteDelegate* delegate) {
   delete tflite::gpu::GetDelegate(delegate);
+}
+
+
+void TfLiteGpuDelegateV2BindBufferToTensor(int bufferID){
+
+  int64_t bytes_size;
+  RETURN_IF_ERROR(GetSSBOSize(ssbo, &bytes_size));
+  return bhwc_objects_.RegisterBuffer(
+      tensor_index, GlBuffer(GL_SHADER_STORAGE_BUFFER, ssbo, bytes_size,
+                               /* offset = */ 0,
+                               /* has_ownership = */ false));
 }

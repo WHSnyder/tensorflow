@@ -39,12 +39,16 @@ limitations under the License.
 
 #include "absl/types/span.h"
 #include "absl/types/variant.h"
+
+#ifndef MAC_OPENGL
 #include <CL/cl.h>
+#include <vulkan/vulkan.h>
+#endif
+
 #include "tensorflow/lite/delegates/gpu/common/data_type.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/util.h"
 #include "tensorflow/lite/delegates/gpu/gl/portable_gl31.h"
-#include <vulkan/vulkan.h>
 
 namespace tflite {
 namespace gpu {
@@ -69,8 +73,10 @@ enum class ObjectType {
   OPENGL_SSBO,
   OPENGL_TEXTURE,
   CPU_MEMORY,
+#ifndef MAC_OPENGL
   OPENCL_TEXTURE,
   OPENCL_BUFFER,
+#endif MAC_OPENGL
 };
 
 struct OpenGlBuffer {
@@ -89,6 +95,7 @@ struct OpenGlTexture {
   GLenum format = GL_INVALID_ENUM;
 };
 
+#ifndef MAC_OPENGL
 struct OpenClBuffer {
   OpenClBuffer() = default;
   explicit OpenClBuffer(cl_mem new_memobj) : memobj(new_memobj) {}
@@ -110,6 +117,7 @@ struct VulkanMemory {
 
   VkDeviceMemory memory;
 };
+#endif
 
 struct CpuMemory {
   CpuMemory() = default;
@@ -195,9 +203,13 @@ bool IsValid(const TensorObjectDef& def);
 // @return the number of elements in a tensor object.
 uint32_t NumElements(const TensorObjectDef& def);
 
+#ifndef MAC_OPENGL
 using TensorObject = absl::variant<absl::monostate, OpenGlBuffer, OpenGlTexture,
                                    CpuMemory, OpenClBuffer, OpenClTexture>;
-
+#else
+using TensorObject = absl::variant<absl::monostate, OpenGlBuffer, OpenGlTexture,
+                                   CpuMemory>;
+#endif
 // @return true if object is set and corresponding values are defined.
 bool IsValid(const TensorObjectDef& def, const TensorObject& object);
 
