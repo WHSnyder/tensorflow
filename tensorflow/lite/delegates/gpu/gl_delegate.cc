@@ -34,7 +34,6 @@ limitations under the License.
 #include <GLES3/gl31.h>
 #endif
 
-#include "glew.h"
 
 #include "absl/types/span.h"
 #include "tensorflow/lite/builtin_ops.h"
@@ -329,6 +328,7 @@ class Delegate {
     
     if (0){
       //Bench mark interpreter time
+      /*
       GLuint64 startTime, stopTime;
       unsigned int queryID[2];      
       glGenQueries(2, queryID);
@@ -350,6 +350,7 @@ class Delegate {
       glGetQueryObjectui64v(queryID[1], GL_QUERY_RESULT, &stopTime);
        
       printf("Time spent on the GPU: %lu ms, waited %d times\n", (stopTime - startTime) / 1000000, tc);
+      */
     } else {
       RETURN_IF_ERROR(inference_context_->Reset());
       RETURN_IF_ERROR(inference_context_->Execute());

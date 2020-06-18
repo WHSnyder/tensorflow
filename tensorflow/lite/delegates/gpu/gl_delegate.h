@@ -17,12 +17,13 @@ limitations under the License.
 #define TENSORFLOW_LITE_DELEGATES_GPU_GL_DELEGATE_H_
 
 #include <stdint.h>
+
 #ifndef MAC_OPENGL
 #include <GLES3/gl31.h>
 #else
-#define GLEW_STATIC
-#include "tensorflow/lite/delegates/gpu/gl/glew.h"
+#include "tensorflow/lite/delegates/gpu/gl/portable_gl31.h"
 #endif
+
 #include "absl/base/macros.h"
 #include "tensorflow/lite/c/common.h"
 

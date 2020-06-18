@@ -21,7 +21,7 @@ limitations under the License.
 #include <stdlib.h>
 #include <iostream>
 
-#include "tensorflow/lite/delegates/gpu/gl/glew.h"
+//#include "tensorflow/lite/delegates/gpu/gl/glew.h"
 
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/gl/gl_errors.h"
