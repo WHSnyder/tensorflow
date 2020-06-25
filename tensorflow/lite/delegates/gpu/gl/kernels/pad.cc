@@ -61,6 +61,8 @@ class Pad : public NodeShader {
     std::string source;
     if (attr.type == PaddingContentType::REFLECT) {
       source = R"(
+  /*PAD_REFLECT*/
+
   int src_x = gid.x - $prepended.x$;
   src_x = abs(src_x);
   src_x = $input_data_0_w$ - 1 - abs(src_x - $input_data_0_w$ + 1);
@@ -90,6 +92,8 @@ class Pad : public NodeShader {
       }
     } else {
       source = R"(
+  /*PAD_ZERO*/
+
   int src_x = gid.x - $prepended.x$;
   int src_y = gid.y - $prepended.y$;
   if (src_x >= 0 && src_x < $input_data_0_w$ && src_y >= 0 && src_y < $input_data_0_h$) {

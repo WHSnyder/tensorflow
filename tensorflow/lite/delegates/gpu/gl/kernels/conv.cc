@@ -86,15 +86,15 @@ class Convolution : public NodeShader {
         {"weights", MakeReadonlyObject(Get3DSizeForPHWO4I4(attr.weights.shape),
                                        ConvertToPHWO4I4(attr.weights))}};
 
-    std::string source;
+    std::string source = "      /*CONV*/\n";
     if (offsets_count_too_large) {
-      source = R"(
+      source += R"(
       int i = 0;
       for (int ky = 0; ky < $kernel_h$; ky++) {
         for (int kx = 0; kx < $kernel_w$; kx++, i++) {
           ivec2 coord = gid.xy * $stride$ + ivec2(kx * $dilation_w$ - $padding_w$, ky * $dilation_h$ - $padding_h$);)";
     } else {
-      source = R"(
+      source += R"(
         for (int i = 0; i < $offsets_count$; ++i) {
           ivec2 coord = gid.xy * $stride$ + $offsets[i]$;)";
     }

@@ -60,6 +60,9 @@ class Softmax : public NodeShader {
     };
 
     std::string source = R"(
+  
+  /*SOFTMAX*/
+
   highp float sum = 0.0;
   for (int d = 0; d < $src_depth$ - 1; ++d) {
     highp vec4 v = $input_data_0[gid.x, gid.y, d]$;

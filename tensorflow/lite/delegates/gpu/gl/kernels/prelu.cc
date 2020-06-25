@@ -59,7 +59,7 @@ class PReLULinearAlpha : public NodeShader {
                   /*shared_variables=*/{},
                   /*workload=*/uint3(),
                   /*workgroup=*/uint3(),
-                  "value_0 = clamp(value_0, 0.0, $clip$) + $alpha[gid.z]$ * "
+                  "/*PRELU_LINEARALPHA_CLIPPED*/\nvalue_0 = clamp(value_0, 0.0, $clip$) + $alpha[gid.z]$ * "
                   "min(value_0, 0.0);",
                   /*input=*/IOStructure::AUTO,
                   /*output=*/IOStructure::AUTO,
@@ -74,7 +74,7 @@ class PReLULinearAlpha : public NodeShader {
                   uint3(shape.w, shape.h, IntegralDivideRoundUp(shape.c, 4)),
                   /*workgroup=*/uint3(),
                   /*source_code=*/
-                  "value_0 = max(value_0, 0.0) + $alpha[gid.z]$ * min(value_0, "
+                  "/*PRELU_LINEARALPHA_NONCLIPPED*/\nvalue_0 = max(value_0, 0.0) + $alpha[gid.z]$ * min(value_0, "
                   "0.0);",
                   /*input=*/IOStructure::AUTO,
                   /*output=*/IOStructure::AUTO,
@@ -119,7 +119,7 @@ class PReLUFull : public NodeShader {
                   uint3(shape.w, shape.h, IntegralDivideRoundUp(shape.c, 4)),
                   /*workgroup=*/uint3(),
                   /*source_code=*/
-                  "value_0 = clamp(value_0, 0.0, $clip$) + "
+                  "/*PRELU_FULL_NONCLIPPED*/\nvalue_0 = clamp(value_0, 0.0, $clip$) + "
                   "$alpha[gid.x, gid.y, gid.z]$ * min(value_0, 0.0);",
                   /*input=*/IOStructure::AUTO,
                   /*output=*/IOStructure::AUTO,
@@ -136,7 +136,7 @@ class PReLUFull : public NodeShader {
                   uint3(shape.w, shape.h, IntegralDivideRoundUp(shape.c, 4)),
                   /*workgroup=*/uint3(),
                   /*source_code=*/
-                  "value_0 = max(value_0, 0.0) + $alpha[gid.x, gid.y, gid.z]$ "
+                  "/*PRELU_FULL_NONCLIPPED*/\nvalue_0 = max(value_0, 0.0) + $alpha[gid.x, gid.y, gid.z]$ "
                   "* min(value_0, 0.0);",
                   /*input=*/IOStructure::AUTO,
                   /*output=*/IOStructure::AUTO,

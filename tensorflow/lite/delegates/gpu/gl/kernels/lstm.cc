@@ -46,6 +46,8 @@ class LstmNodeShader : public NodeShader {
   Status GenerateCode(const GenerationContext& ctx,
                       GeneratedCode* generated_code) const final {
     std::string code = R"(
+      /*LSTM*/
+
       vec4 prev_state  = $input_data_1[gid.x, gid.y, gid.z]$;
 
       int c0 = 0 * $workload_z$;

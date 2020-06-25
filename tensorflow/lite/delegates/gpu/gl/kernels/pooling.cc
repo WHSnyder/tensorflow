@@ -55,6 +55,8 @@ Status GenerateMaxPoolingCode(const Pooling2DAttributes& attr,
   // expected to behave as defined in IEEE 754. In particular, signed
   // infinities are mandated and defined as a number divided by 0.
   std::string source = R"(
+  /*MAX_POOLING*/
+
   const highp float inf = -(1.0f / 0.0f);
   value_0 = vec4(inf);)";
   if (attr.output_indices) {
@@ -112,6 +114,8 @@ Status GenerateAveragePoolingCode(const Pooling2DAttributes& attr,
   };
 
   std::string source = R"(
+  /*AVERAGE_POOLING*/
+
   int window_size = 0;
   for (int a = 0; a < $window_h$; ++a) {
     for (int b = 0; b < $window_w$; ++b) {

@@ -35,21 +35,22 @@ class ElementwiseOneArgument : public NodeShader {
     std::string source;
     switch (operation_type_) {
       case OperationType::ABS:
-        source = "value_0 = abs(value_0);";
+        source = "/*ELEMENTWISE_ABS*/\nvalue_0 = abs(value_0);";
         break;
       case OperationType::COS:
-        source = "value_0 = cos(value_0);";
+        source = "/*ELEMENTWISE_COS*/\nvalue_0 = cos(value_0);";
         break;
       case OperationType::EXP:
-        source = "value_0 = exp(value_0);";
+        source = "/*ELEMENTWISE_EXP*/\nvalue_0 = exp(value_0);";
         break;
       case OperationType::HARD_SWISH:
         source =
-            "value_0 *= clamp(value_0 / 6.0 + vec4(0.5), vec4(0.0), "
+            "/*ELEMENTWISE_HARD_SWISH*/\nvalue_0 *= clamp(value_0 / 6.0 + vec4(0.5), vec4(0.0), "
             "vec4(1.0));";
         break;
       case OperationType::LOG:
         source = R"(
+            /*ELEMENTWISE_LOG*/
             const float nan = normalize(vec4(0, 0, 0, 0)).x;
             value_0.x = value_0.x > 0.0 ? log(value_0.x) : nan;
             value_0.y = value_0.y > 0.0 ? log(value_0.y) : nan;
@@ -59,6 +60,7 @@ class ElementwiseOneArgument : public NodeShader {
         break;
       case OperationType::RSQRT:
         source = R"(
+            /*ELEMENTWISE_RSQRT*/
             const float nan = normalize(vec4(0, 0, 0, 0)).x;
             value_0.x = value_0.x > 0.0 ? 1.0 / sqrt(value_0.x) : nan;
             value_0.y = value_0.y > 0.0 ? 1.0 / sqrt(value_0.y) : nan;
@@ -67,13 +69,14 @@ class ElementwiseOneArgument : public NodeShader {
         )";
         break;
       case OperationType::SIGMOID:
-        source = "value_0 = 1.0 / (1.0 + exp(-1.0 * value_0));";
+        source = "/*ELEMENTWISE_SIGMOID*/\nvalue_0 = 1.0 / (1.0 + exp(-1.0 * value_0));";
         break;
       case OperationType::SIN:
-        source = "value_0 = sin(value_0);";
+        source = "/*ELEMENTWISE_SIN*/\nvalue_0 = sin(value_0);";
         break;
       case OperationType::SQRT:
         source = R"(
+            /*ELEMENTWISE_SQRT*/
             const float nan = normalize(vec4(0, 0, 0, 0)).x;
             value_0.x = value_0.x >= 0.0 ? sqrt(value_0.x) : nan;
             value_0.y = value_0.y >= 0.0 ? sqrt(value_0.y) : nan;
@@ -82,10 +85,10 @@ class ElementwiseOneArgument : public NodeShader {
         )";
         break;
       case OperationType::SQUARE:
-        source = "value_0 = value_0 * value_0;";
+        source = "/*ELEMENTWISE_SQUARE*/\nvalue_0 = value_0 * value_0;";
         break;
       case OperationType::TANH:
-        source = "value_0 = tanh(value_0);";
+        source = "/*ELEMENTWISE_TANH*/\nvalue_0 = tanh(value_0);";
         break;
       default:
         return InvalidArgumentError("Incorrect elementwise operation type.");
@@ -135,29 +138,29 @@ class ElementwiseTwoArguments : public NodeShader {
     std::string source;
     switch (operation_type_) {
       case OperationType::SUB: {
-        source = "value_0 -= value_1;";
+        source = "/*ELEMENTWISE_SUB*/\nvalue_0 -= value_1;";
         break;
       }
       case OperationType::DIV: {
-        source = "value_0 /= value_1;";
+        source = "/*ELEMENTWISE_DIV*/\nvalue_0 /= value_1;";
         break;
       }
       case OperationType::MAXIMUM: {
-        source = "value_0 = max(value_0, value_1);";
+        source = "/*ELEMENTWISE_MAXIMUM*/\nvalue_0 = max(value_0, value_1);";
         break;
       }
       case OperationType::MINIMUM: {
-        source = "value_0 = min(value_0, value_1);";
+        source = "/*ELEMENTWISE_MINIMUM*/\nvalue_0 = min(value_0, value_1);";
         break;
       }
       case OperationType::POW: {
         // From documentation :
         // The result is undefined if x<0 or if x=0 and y≤0.
-        source = "value_0 = pow(value_0, value_1);";
+        source = "/*ELEMENTWISE_POW*/\nvalue_0 = pow(value_0, value_1);";
         break;
       }
       case OperationType::SQUARED_DIFF: {
-        source = "value_0 = (value_0 - value_1) * (value_0 - value_1);";
+        source = "/*ELEMENTWISE_DIFF*/\nvalue_0 = (value_0 - value_1) * (value_0 - value_1);";
         break;
       }
 
@@ -184,11 +187,11 @@ class ElementwiseTwoArguments : public NodeShader {
     std::string source;
     switch (operation_type_) {
       case OperationType::MAXIMUM: {
-        source = "value_0 = max(value_0, $scalar$);";
+        source = "/*ELEMENTWISE_MAXIMUM_SCALAR*/\nvalue_0 = max(value_0, $scalar$);";
         break;
       }
       case OperationType::MINIMUM: {
-        source = "value_0 = min(value_0, $scalar$);";
+        source = "/*ELEMENTWISE_MINIMUM_SCALAR*/\nvalue_0 = min(value_0, $scalar$);";
         break;
       }
 
@@ -229,6 +232,7 @@ class ElementwiseTwoArguments : public NodeShader {
     switch (operation_type_) {
       case OperationType::SQUARED_DIFF: {
         source = R"(
+        /*ELEMENTWISE_BROADCAST*/
         vec4 diff = $input_data_0[gid.x, gid.y, gid.z]$ -
                     $input_data_1[0, 0, gid.z]$;
         value_0 = diff * diff;

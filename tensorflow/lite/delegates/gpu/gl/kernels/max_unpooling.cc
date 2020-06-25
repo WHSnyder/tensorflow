@@ -45,6 +45,8 @@ class MaxUnpooling : public NodeShader {
     };
 
     std::string source = R"(
+      /*MAX_UNPOOLING*/
+
       ivec2 coord = (gid.xy + $offset$) / $stride$;
       ivec4 indices = $input_data_1[coord.x, coord.y, gid.z]$;
       vec4 input_ = $input_data_0[coord.x, coord.y, gid.z]$;

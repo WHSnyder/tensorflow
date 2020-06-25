@@ -51,7 +51,7 @@ class Slice : public NodeShader {
         {"dst_size", output->tensor.shape.c},
     };
 
-    std::string code;
+    std::string code = "/*SLICE*/\n";
     code += "      ivec2 offset;\n";
     if (attr.strides.w > 0) {
       code += "      offset.x = $widths.x$;\n";

@@ -55,7 +55,7 @@ class Add : public NodeShader {
             /*workload=*/uint3(),
             /*workgroup=*/uint3(),
             /*source_code=*/
-            "value_0 = $input_data_0[gid.x, gid.y, gid.z]$ + "
+            "/*BROADCASTED_ADD*/\nvalue_0 = $input_data_0[gid.x, gid.y, gid.z]$ + "
             "          $input_data_1[0, 0, gid.z]$;",
             /*input=*/IOStructure::ONLY_DEFINITIONS,
             /*output=*/IOStructure::AUTO,
@@ -91,7 +91,7 @@ class Add : public NodeShader {
           /*shared_variables=*/{},
           /*workload=*/uint3(),
           /*workgroup=*/uint3(),
-          /*source_code=*/"value_0 += $scalar$;",
+          /*source_code=*/"/*ADD_SCALAR*/\nvalue_0 += $scalar$;",
           /*input=*/IOStructure::AUTO,
           /*output=*/IOStructure::AUTO,
       };
@@ -105,7 +105,7 @@ class Add : public NodeShader {
           /*workload=*/
           uint3(shape.w, shape.h, IntegralDivideRoundUp(shape.c, 4)),
           /*workgroup=*/uint3(),
-          /*source_code=*/"value_0 += $add_buffer[gid.z]$;",
+          /*source_code=*/"/*ADD_TENSOR*/\nvalue_0 += $add_buffer[gid.z]$;",
           /*input=*/IOStructure::AUTO,
           /*output=*/IOStructure::AUTO,
       };

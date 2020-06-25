@@ -116,6 +116,8 @@ class FromTensorConverter : public OpenGlConverterImpl {
     layout(std430) buffer;
     precision highp float;
 
+    /*GL -> BHWC CONVERTER*/
+
     layout(binding = 0) readonly buffer B0 {
       vec4 elements[];
     } input_data;
@@ -203,6 +205,8 @@ class ToTensorConverter : public OpenGlConverterImpl {
     return InitializeProgram(uint3(8, 4, 2), R"(
     layout(std430) buffer;
     precision highp float;
+
+    /*BHWC -> GL CONVERTER*/
 
     layout(binding = 0) readonly buffer B0 {
       float elements[];

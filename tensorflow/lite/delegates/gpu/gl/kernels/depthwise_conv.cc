@@ -84,9 +84,9 @@ class DepthwiseConvolution : public NodeShader {
     std::vector<std::pair<std::string, Object>> objects = {
         {"weights", MakeReadonlyObject(ConvertToPIOHW4(attr.weights))}};
 
-    std::string source;
+    std::string source = "/*DEPTHWISE_CONV*/\n";
     if (offsets_count_too_large) {
-      source = R"(
+      source += R"(
         int offsets_count = $kernel_w$ * $kernel_h$;
         int src_layer_offset = (gid.z % $channel_multiplier$) * 4;
         int filter_offset = gid.z * $src_depth$ * offsets_count * 4;
@@ -95,7 +95,7 @@ class DepthwiseConvolution : public NodeShader {
           for (int kx = 0; kx < $kernel_w$; kx++, i++) {
             ivec2 coord = gid.xy * $stride$ + ivec2(kx * $dilation_w$ - $padding_w$, ky * $dilation_h$ - $padding_h$);)";
     } else {
-      source = R"(
+      source += R"(
         int offsets_count = $offsets_count$;
         int src_layer_offset = (gid.z % $channel_multiplier$) * 4;
         int filter_offset = gid.z * $src_depth$ * offsets_count * 4;

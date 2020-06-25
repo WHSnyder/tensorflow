@@ -58,7 +58,7 @@ Status GenerateApplyMaskCode(const NodeShader::GenerationContext& ctx,
   const auto& shape0 = inputs[0]->tensor.shape;
   const auto& shape1 = inputs[1]->tensor.shape;
 
-  std::string source = "value_0 = $input_data_0[gid.x, gid.y, gid.z]$ * ";
+  std::string source = "/*MUL_MASKED*/\nvalue_0 = $input_data_0[gid.x, gid.y, gid.z]$ * ";
   if (shape1.c == 1) {
     // [H, W, C] x [H, W, 0][0]
     absl::StrAppend(&source, "$input_data_1[gid.x, gid.y, 0]$.x;");
@@ -97,7 +97,7 @@ Status GenerateMultiplyScalarCode(const NodeShader::GenerationContext& ctx,
         /*shared_variables=*/{},
         /*workload=*/uint3(),
         /*workgroup=*/uint3(),
-        /*source_code=*/"value_0 *= $scalar$;",
+        /*source_code=*/"/*MUL_SCALAR*/\nvalue_0 *= $scalar$;",
         /*input=*/IOStructure::AUTO,
         /*output=*/IOStructure::AUTO,
     };
@@ -114,7 +114,7 @@ Status GenerateMultiplyScalarCode(const NodeShader::GenerationContext& ctx,
         /*workload=*/
         uint3(shape.w, shape.h, IntegralDivideRoundUp(shape.c, 4)),
         /*workgroup=*/uint3(),
-        /*source_code=*/"value_0 *= $mul_buffer[gid.z]$;",
+        /*source_code=*/"/*MUL_NONSCALAR*/\nvalue_0 *= $mul_buffer[gid.z]$;",
         /*input=*/IOStructure::AUTO,
         /*output=*/IOStructure::AUTO,
     };

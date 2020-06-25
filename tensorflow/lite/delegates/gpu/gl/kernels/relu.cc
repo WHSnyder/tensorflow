@@ -45,11 +45,11 @@ class ReLU : public NodeShader {
       min = "min($alpha$ * value_0, 0.0)";
       params.push_back({"alpha", attr.alpha});
     }
-    std::string code;
+    std::string code = "/*RELU*/\n";
     if (attr.clip == 0) {
-      code = "value_0 = max(value_0, " + min + ");";
+      code += "value_0 = max(value_0, " + min + ");";
     } else {
-      code = "value_0 = clamp(value_0, " + min + ", vec4($clip$));";
+      code += "value_0 = clamp(value_0, " + min + ", vec4($clip$));";
       params.push_back({"clip", attr.clip});
     }
     *generated_code = {

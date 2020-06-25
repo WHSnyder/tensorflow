@@ -78,12 +78,12 @@ class Resize : public NodeShader {
                                      output->tensor.shape.h, attr))},
     };
 
-    std::string source;
+    std::string source = "/*RESIZE*/\n";
     if (attr.type == SamplingType::BILINEAR) {
       if (attr.half_pixel_centers) {
-        source = "vec2 coord = (vec2(gid.xy) + 0.5) * $scale_factor$ - 0.5;";
+        source += "vec2 coord = (vec2(gid.xy) + 0.5) * $scale_factor$ - 0.5;";
       } else {
-        source = "vec2 coord = vec2(gid.xy) * $scale_factor$;";
+        source += "vec2 coord = vec2(gid.xy) * $scale_factor$;";
       }
       source += R"(
       vec2 coord_floor = floor(coord);
@@ -102,7 +102,7 @@ class Resize : public NodeShader {
 
       value_0 = mix(mix(tex11, tex21, t.x), mix(tex12, tex22, t.x), t.y);)";
     } else if (attr.type == SamplingType::NEAREST) {
-      source = R"(
+      source += R"(
       ivec2 coord = ivec2(vec2(gid.xy) * $scale_factor$);
       value_0 = $input_data_0[coord.x, coord.y, gid.z]$;
       )";

@@ -58,6 +58,8 @@ class ConvolutionTransposedBuffers : public NodeShader {
                             ConvertToPHWO4I4Transposed(attr.weights))}};
 
     std::string source = R"(
+    /*TRANSPOSE_CONV*/
+
     #define IN_BOUNDS(p, p0, p1) (all(greaterThanEqual(p, p0)) && all(lessThan(p, p1)))
 
     ivec2 p0 = ($padding$ + $stride$ - gid.xy % $stride$) % $stride$;

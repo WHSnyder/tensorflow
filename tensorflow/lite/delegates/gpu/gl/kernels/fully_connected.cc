@@ -58,6 +58,8 @@ class FullyConnectedBuffers : public NodeShader {
         {"weights", MakeReadonlyObject(ConvertToPHWO4I4(attr.weights))}};
 
     std::string source = R"(
+  /*FULLY_CONNECTED*/
+
   const int threads = int(gl_WorkGroupSize.y);
   const int workers = int(gl_WorkGroupSize.x);
   ivec3 tid = ivec3(gl_LocalInvocationID);
