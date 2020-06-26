@@ -44,7 +44,8 @@ class Mean : public NodeShader {
 
     std::vector<Variable> parameters = {
         {"input_data_0_h", input->tensor.shape.h},
-        {"input_data_0_w", input->tensor.shape.w}};
+        {"input_data_0_w", input->tensor.shape.w},
+        {"input_data_0_c", input->tensor.shape.c}};
 
     /*
     Shaders may be compiled with a precision hint mediump, which means that
@@ -56,60 +57,78 @@ class Mean : public NodeShader {
 
     std::string source;
 
-    if (input->tensor.shape.h * input->tensor.shape.w <= 256){
+    std::vector<Variable> shared_variables = {
+        {"sh_mem", std::vector<float4>(256 * 10)},
+    };
+
+    if (input->tensor.shape.h * input->tensor.shape.w >= 2048) {
 
       source = R"(        
         /*MEAN*/
         highp vec4 sum = vec4(0.0);
-        highp float size = float($input_data_0_w$ * $input_data_0_h$);
+        highp vec4 zilch = vec4(0.0);
+        float cDim = float($input_data_0_c$);
 
-        const int threads = int(gl_WorkGroupSize.y);
-        const int workers = int(gl_WorkGroupSize.x);
-        ivec3 tid = ivec3(gl_LocalInvocationID);
-   
-        int localSize = int(ceil(size/256.0));
-        
-        int x = tid.x;
-        int y = tid.y;
-
-        int start = x * (threads * localSize) + y * localSize;
-
-        int z_offset = tid.z * size;
-
-        for (int i = 0; i < localSize; i++) {
-          int index = start + i + z_offset;
-          sum += start < size ? $input_data_0[index, 0, 0]$ : vec4(0.0);
+        if (gid.z >= cDim / 4.0){
+          return;
         }
 
-        value_0 = (sum / size);
-        sh_mem[tid.x * tid.y + tid.x] = value_0
+        highp float inputSize = float($input_data_0_w$ * $input_data_0_h$);
+
+        const int sizeY = int(gl_WorkGroupSize.y);
+        const int sizeX = int(gl_WorkGroupSize.x);
+        ivec3 localID = ivec3(gl_LocalInvocationID);
+
+        int workGridSize = sizeX * sizeY;
+        int taskSize = int(ceil(inputSize/float(workGridSize)));
+
+        int gridID = localID.y * sizeX + localID.x;
+        int z_offset = localID.z * int(inputSize);
+
+        int startIndex = gridID * taskSize;
+
+        for (int i = startIndex; i < startIndex + taskSize; i+=1) {
+          sum += i >= inputSize ? zilch : $input_data_0[i + z_offset, 0, 0]$;
+        }
+
+        z_offset = localID.z * workGridSize;
+
+        sh_mem[gridID + z_offset] = sum;
 
         memoryBarrierShared();
         barrier();
 
-        if (gid.x >= 1 || gid.y >= 1 || gid.z >= 4){
+        if (gid.x >= 1 || gid.y >= 1){
           return;
         }
 
-        for (int i = 0; i < 16; i++){
-          
+        sum = vec4(0.0);
+        
+        
+        for (int i = 0; i < workGridSize; i++){
+          sum += sh_mem[i + z_offset];  
         }
+
+        value_0 = sum / inputSize;
       )";
 
       *generated_code = {
           /*parameters=*/std::move(parameters),
           /*objects=*/{},
-          /*shared_variables=*/{"sh_mem", std::vector<float4>(0)},
+          /*shared_variables=*/std::move(shared_variables),
           /*workload=*/uint3(1,1,1),
-          /*workgroup=*/uint3(16,16,4),
+          /*workgroup=*/uint3(8,8,8),
           /*source_code=*/std::move(source),
           /*input=*/IOStructure::ONLY_DEFINITIONS,
           /*output=*/IOStructure::AUTO,
       };
-    } else {
+    }
+
+    else {
 
       source = R"(        
         /*MEAN*/
+        /*
         highp vec4 sum = vec4(0.0);
         highp float size = float($input_data_0_w$ * $input_data_0_h$);
         for (int h = 0; h < $input_data_0_h$; h+=2) {
@@ -118,13 +137,29 @@ class Mean : public NodeShader {
           }
         }
 
-        value_0 = (sum / size) * 4.0;
+        highp float c = float($input_data_0_c$);
+
+
+        */
+        if (gid.x >= 1 || gid.y >= 1 || gid.z >= 8){
+          return;
+        }
+
+        highp vec4 sum = vec4(0.0);
+        highp float size = float($input_data_0_w$ * $input_data_0_h$);
+        for (int h = 0; h < $input_data_0_h$; h+=1) {
+          for (int w = 0; w < $input_data_0_w$; w+=1) {
+            sum += $input_data_0[w, h, gid.z]$;
+          }
+        }
+
+        value_0 = (sum / size) * 1.0;
       )";
     
       *generated_code = {
           /*parameters=*/std::move(parameters),
           /*objects=*/{},
-          /*shared_variables=*/{/*"sh_mem", std::vector<float4>(0)*/},
+          /*shared_variables=*/std::move(shared_variables),
           /*workload=*/uint3(),
           /*workgroup=*/uint3(),
           /*source_code=*/std::move(source),
