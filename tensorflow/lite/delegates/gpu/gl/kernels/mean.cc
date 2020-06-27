@@ -127,33 +127,15 @@ class Mean : public NodeShader {
     else {
 
       source = R"(        
-        /*MEAN*/
-        /*
         highp vec4 sum = vec4(0.0);
         highp float size = float($input_data_0_w$ * $input_data_0_h$);
-        for (int h = 0; h < $input_data_0_h$; h+=2) {
-          for (int w = 0; w < $input_data_0_w$; w+=2) {
+        for (int h = 0; h < $input_data_0_h$; h++) {
+          for (int w = 0; w < $input_data_0_w$; w++) {
             sum += $input_data_0[w, h, gid.z]$;
           }
         }
 
-        highp float c = float($input_data_0_c$);
-
-
-        */
-        if (gid.x >= 1 || gid.y >= 1 || gid.z >= 8){
-          return;
-        }
-
-        highp vec4 sum = vec4(0.0);
-        highp float size = float($input_data_0_w$ * $input_data_0_h$);
-        for (int h = 0; h < $input_data_0_h$; h+=1) {
-          for (int w = 0; w < $input_data_0_w$; w+=1) {
-            sum += $input_data_0[w, h, gid.z]$;
-          }
-        }
-
-        value_0 = (sum / size) * 1.0;
+        value_0 = sum / size;
       )";
     
       *generated_code = {
