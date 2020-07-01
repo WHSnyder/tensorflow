@@ -47,55 +47,54 @@ class Mean : public NodeShader {
         {"input_data_0_w", input->tensor.shape.w},
         {"input_data_0_c", input->tensor.shape.c}};
 
-    /*
-    Shaders may be compiled with a precision hint mediump, which means that
-    GLSL compiler may drop the size of float data type from 32 to 16 bits.
-    If "sum" and "size" variables are 16bit floats, their values range
-    become not enough for providing a good results accuracy. That is why
-    their precision is forced to be 32bit by using highp qualifier.
-    */
 
     std::string source;
 
+    constexpr int kWorkgroupHintX = 4;
+    constexpr int kWorkgroupHintY = 4;
+    int kWorkgroupHintZ = ceil(input->tensor.shape.c / 4.0 - .0001);
+
     std::vector<Variable> shared_variables = {
-        {"sh_mem", std::vector<float4>(256 * 10)},
+        {"sh_mem", std::vector<float4>(kWorkgroupHintX/2 * kWorkgroupHintX * 
+                                       kWorkgroupHintY/2 * kWorkgroupHintY * 
+                                       kWorkgroupHintZ)},
     };
 
-    if (input->tensor.shape.h * input->tensor.shape.w >= 2048) {
+
+    if (input->tensor.shape.h * input->tensor.shape.w >= 1024) { //Arbitrary
 
       source = R"(        
         /*MEAN*/
         highp vec4 sum = vec4(0.0);
-        highp vec4 zilch = vec4(0.0);
-        float cDim = float($input_data_0_c$);
+        highp float size = float($input_data_0_w$ * $input_data_0_h$);
 
-        if (gid.z >= cDim / 4.0){
-          return;
-        }
-
-        highp float inputSize = float($input_data_0_w$ * $input_data_0_h$);
-
-        const int sizeY = int(gl_WorkGroupSize.y);
+        const int groupsX = int(gl_NumWorkGroups.x);
+        const int groupsY = int(gl_NumWorkGroups.y);
         const int sizeX = int(gl_WorkGroupSize.x);
-        ivec3 localID = ivec3(gl_LocalInvocationID);
+        const int sizeY = int(gl_WorkGroupSize.y);
+        ivec3 localID = ivec3(gl_LocalInvocationID.xyz);
+        int workGridSize = sizeX * sizeY * groupsX * groupsY;
 
-        int workGridSize = sizeX * sizeY;
-        int taskSize = int(ceil(inputSize/float(workGridSize)));
+        int local_grid_index = sizeX * localID.y + localID.x;
+        int global_grid_index = gid.x * sizeX * sizeY * groupsY + gid.y * sizeX * sizeY;
+        
+        int taskSize = int(ceil(size / float(workGridSize)));
 
-        int gridID = localID.y * sizeX + localID.x;
-        int z_offset = localID.z * int(inputSize);
+        int flattenedIndex = global_grid_index + local_grid_index;
+        int z_offset = gid.z * int(size);
 
-        int startIndex = gridID * taskSize;
+        int startIndex = flattenedIndex * taskSize;
 
-        for (int i = startIndex; i < startIndex + taskSize; i+=1) {
-          sum += i >= inputSize ? zilch : $input_data_0[i + z_offset, 0, 0]$;
+        for (int i = startIndex; i < startIndex + taskSize; i++) {
+          sum += i < size ? $input_data_0[z_offset + i, 0, 0]$ : vec4(0.0);
         }
 
-        z_offset = localID.z * workGridSize;
+        z_offset = gid.z * workGridSize;
 
-        sh_mem[gridID + z_offset] = sum;
+        sh_mem[flattenedIndex + z_offset] = sum;
 
         memoryBarrierShared();
+        groupMemoryBarrier();
         barrier();
 
         if (gid.x >= 1 || gid.y >= 1){
@@ -104,20 +103,19 @@ class Mean : public NodeShader {
 
         sum = vec4(0.0);
         
-        
         for (int i = 0; i < workGridSize; i++){
           sum += sh_mem[i + z_offset];  
         }
 
-        value_0 = sum / inputSize;
+        value_0 = sum / size;
       )";
 
       *generated_code = {
           /*parameters=*/std::move(parameters),
           /*objects=*/{},
           /*shared_variables=*/std::move(shared_variables),
-          /*workload=*/uint3(1,1,1),
-          /*workgroup=*/uint3(8,8,8),
+          /*workload=*/uint3(kWorkgroupHintX,kWorkgroupHintY,1),
+          /*workgroup=*/ uint3(kWorkgroupHintX/2,kWorkgroupHintY/2,kWorkgroupHintZ), 
           /*source_code=*/std::move(source),
           /*input=*/IOStructure::ONLY_DEFINITIONS,
           /*output=*/IOStructure::AUTO,
@@ -127,6 +125,16 @@ class Mean : public NodeShader {
     else {
 
       source = R"(        
+<<<<<<< Updated upstream
+=======
+        
+        /*Shaders may be compiled with a precision hint mediump, which means that
+        GLSL compiler may drop the size of float data type from 32 to 16 bits.
+        If "sum" and "size" variables are 16bit floats, their values range
+        become not enough for providing a good results accuracy. That is why
+        their precision is forced to be 32bit by using highp qualifier.*/
+        
+>>>>>>> Stashed changes
         highp vec4 sum = vec4(0.0);
         highp float size = float($input_data_0_w$ * $input_data_0_h$);
         for (int h = 0; h < $input_data_0_h$; h++) {
@@ -141,7 +149,7 @@ class Mean : public NodeShader {
       *generated_code = {
           /*parameters=*/std::move(parameters),
           /*objects=*/{},
-          /*shared_variables=*/std::move(shared_variables),
+          /*shared_variables=*/{},
           /*workload=*/uint3(),
           /*workgroup=*/uint3(),
           /*source_code=*/std::move(source),
